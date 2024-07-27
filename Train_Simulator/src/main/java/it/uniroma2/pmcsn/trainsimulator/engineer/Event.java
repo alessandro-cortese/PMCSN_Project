@@ -1,3 +1,5 @@
+package it.uniroma2.pmcsn.trainsimulator.engineer;
+
 public enum Event{
 
     //TICKET_MACHINE events
