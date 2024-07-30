@@ -1,5 +1,9 @@
 #define START 0.0
 #define STOP 10000.0
+#define SEED 123456789
+
+//Dimension of array of time
+#define DIM 15
 
 // Arrival rate of traveller to the station [req/sec]
 #define LAMBDA1 0.129  // [05 - 08]
@@ -33,4 +37,4 @@
 #define SR_TICKET_GATE_OPERATOR 45
 
 // Total number of queues
-#define QUEUE_NUMBER_CENTERS 4
+#define QUEUE_NUMBER_CENTERS 5

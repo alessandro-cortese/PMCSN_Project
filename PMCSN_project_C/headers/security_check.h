@@ -1,3 +1,3 @@
-void user_arrivals4(void);
-void user_departure4(void);
-void abandon4(void);
+void user_arrivals_security_check(void);
+void user_departure_security_check(void);
+void abandon_security_check(void);

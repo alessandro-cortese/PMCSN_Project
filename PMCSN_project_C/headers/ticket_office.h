@@ -1,3 +1,3 @@
-void user_arrivals2(void);
-void user_departure2(void);
-void abandon2(void);
+void user_arrivals_ticket_office(void);
+void user_departure_ticket_office(void);
+void abandon_ticket_office(void);
