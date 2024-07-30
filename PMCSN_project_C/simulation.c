@@ -18,7 +18,7 @@ struct event_list events;
 struct states state[5];
 struct area areas[5];
 struct time t[5];
-struct loss los[5];
+struct loss loss[5];
 
 double rate;
 
@@ -38,7 +38,8 @@ double getUserArrival2(double arrival)
 	arrival += Exponential(rate * P_TICKET_PURCHASED_FROM_TICKET_OFFICE * P_TICKET_NOT_PURCHASED);
 	return (arrival);
 }
-void initializeEventList(double *n, int numCenters)
+
+void initializeEventList(int *n, int numCenters)
 {
 	// Init ticket machine
 	events.user_arrival_to_ticket_machine.user_arrival_time = getUserArrival(START);
@@ -69,10 +70,53 @@ void initializeEventList(double *n, int numCenters)
 	events.completionTimes_security_check = (double *)malloc(sizeof(double) * n[3]);
 	events.completionTimes_ticket_gate = (double *)malloc(sizeof(double) * n[4]);
 
-	for (int i = 0; i < numCenters; i++)
-	{
-		printf("%f\n", n[i]);
+	for(int i=0; i<n[0]; i++) {
+		events.completionTimes_ticket_machine[i] = (double) INFINITY;
 	}
+	for(int i=0; i<n[1]; i++) {
+		events.completionTimes_ticket_office[i] = (double) INFINITY;
+	}
+	for(int i=0; i<n[2]; i++) {
+		events.completionTimes_customer_support[i] = (double) INFINITY;
+	}
+	for(int i=0; i<n[3]; i++) {
+		events.completionTimes_security_check[i] = (double) INFINITY;
+	}
+	for(int i=0; i<n[4]; i++) {
+		events.completionTimes_ticket_gate[i] = (double) INFINITY;
+	}
+}
+
+void initializeTime() {
+	for(int i=0; i<5; i++) {
+		t[i].current = 0.0;
+		t[i].next = 0.0;
+		t[i].last = 0.0;
+	}
+
+}
+
+
+void initializeArea() {
+
+	for(int i=0; i<5; i++) {
+		areas[i].node = 0.0;
+		areas[i].queue = 0.0;
+		areas[i].service = 0.0;
+	}
+
+}
+
+
+void initializeStateVariables(int *m) {
+
+	//
+	for(int j = 0; j < 5; j++) {
+		state[j].population = 0;
+		state[j].server_occupation = (int *) malloc(sizeof(int)*m[j]);
+		for(int i=0; i<m[j]; i++) {
+			state[j].server_occupation[i] = 0;	//0 = IDLE, 1 = BUSY
+		}
 }
 
 int main(int argc, char **argv)

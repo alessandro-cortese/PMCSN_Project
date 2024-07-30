@@ -4,7 +4,7 @@
 struct time {
     double current;
     double next;
-    double last[5]; //todo: why 5?
+    double last; 
 };
 
 #endif
