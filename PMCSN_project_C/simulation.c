@@ -1,5 +1,8 @@
 #include "./data_structures/event_list.h"
 #include "./data_structures/states.h"
+#include "./data_structures/area.h"
+#include "./data_structures/time.h"
+#include "./data_structures/loss.h"
 #include "./headers/ticket_machine.h"
 #include "./headers/ticket_office.h"
 #include "./headers/customer_support.h"
@@ -12,7 +15,7 @@
 #include <stdlib.h>
 
 struct event_list events;
-struct states state[5];		
+struct states state[5];
 struct area areas[5];
 struct time t[5];
 struct loss los[5];
