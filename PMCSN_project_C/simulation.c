@@ -11,6 +11,7 @@
 #include "./headers/ticket_gate.h"
 #include "./headers/constants.h"
 #include "./headers/rngs.h"
+#include "./headers/utility_functions.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -19,15 +20,10 @@
 struct event_list events;
 struct states state[5];
 struct area areas[5];
-struct time t;
+struct time *t;
 struct loss loss[5];
 
 double rate;
-
-double Exponential(double m)
-{
-	return (-m * log(1.0 - Random()));
-}
 
 double get_user_arrival_to_ticket_machine(double arrival)
 {
@@ -113,163 +109,6 @@ double get_abandon_ticket_gate(double arrival)
 	return abandon;
 }
 
-bool is_system_empty(int *n)
-{
-
-	// This if check if there are job in the various centers
-	if (state[0].population > 0 || state[1].population > 0 || state[2].population > 0 || state[3].population > 0 || state[4].population > 0)
-		return false;
-
-	// This for checks if there are jobs in the various server, both in the centers and in the queues
-	for (int j = 0; j < 5; j++)
-	{
-		for (int i = 0; i < n[j]; i++)
-		{
-			if (state[j].server_occupation[i] != 0)
-				return false;
-		}
-	}
-}
-
-struct next_abandon get_min_abandon(struct user *head)
-{
-
-	struct next_abandon min;
-	min.user_Id = head->id;
-	min.abandonTime = head->abandonTime;
-
-	struct user *current = head;
-
-	while (current != NULL)
-	{
-		if (current->abandonTime < min.abandonTime)
-		{
-			min.user_Id = current->id;
-			min.abandonTime = current->abandonTime;
-		}
-		current = current->next;
-	}
-
-	return min;
-}
-
-struct next_job get_min_service(int num_servers) {
-
-	struct next_job min;
-	min.serverOffset = 0;
-	min.completionTime = (double) INFINITY;
-	
-
-}
-
-int len(double *array)
-{
-
-	int count = 0;
-
-	return count;
-}
-
-double get_smallest(double *values)
-{
-
-	double smallest = (double)INFINITY;
-
-	for (int i = 0; i < DIM; i++)
-	{
-		if (values[i] < smallest)
-			smallest = values[i];
-	}
-
-	return smallest;
-}
-
-double get_minimum_time(int *m)
-{
-
-	double min_abandon_ticket_machine = (double)INFINITY;
-	double min_abandon_ticket_office = (double)INFINITY;
-	double min_abandon_customer_support = (double)INFINITY;
-	double min_abandon_security_check = (double)INFINITY;
-	double min_abandon_ticket_gate = (double)INFINITY;
-
-	if (events.head_ticket_machine != NULL)
-	{
-		min_abandon_ticket_machine = get_min_abandon(events.head_ticket_machine);
-	}
-	if (events.head_ticket_office != NULL)
-	{
-		min_abandon_ticket_office = get_min_abandon(events.head_ticket_office);
-	}
-
-	if (events.head_customer_support != NULL)
-	{
-		min_abandon_customer_support = get_min_abandon(events.head_customer_support);
-	}
-
-	if (events.head_security_check != NULL)
-	{
-		min_abandon_security_check = get_min_abandon(events.head_security_check);
-	}
-
-	if (events.head_ticket_gate != NULL)
-	{
-		min_abandon_ticket_gate = get_min_abandon(events.head_ticket_gate);
-	}
-
-	double min_service_ticket_machine = (double)INFINITY;
-	double min_service_ticket_office = (double)INFINITY;
-	double min_service_customer_support = (double)INFINITY;
-	double min_service_security_check = (double)INFINITY;
-	double min_service_ticket_gate = (double)INFINITY;
-
-	for (int i = 0; i < m[0]; i++)
-	{
-		if (events.completionTimes_ticket_machine[i] < min_service_ticket_machine)
-			min_service_ticket_machine = events.completionTimes_ticket_machine[i];
-	}
-	for (int i = 0; i < m[1]; i++)
-	{
-		if (events.completionTimes_ticket_office[i] < min_service_ticket_office)
-			min_service_ticket_office = events.completionTimes_ticket_office[i];
-	}
-	for (int i = 0; i < m[2]; i++)
-	{
-		if (events.completionTimes_customer_support[i] < min_service_customer_support)
-			min_service_customer_support = events.completionTimes_customer_support[i];
-	}
-	for (int i = 0; i < m[3]; i++)
-	{
-		if (events.completionTimes_security_check[i] < min_service_security_check)
-			min_service_security_check = events.completionTimes_security_check[i];
-	}
-	for (int i = 0; i < m[4]; i++)
-	{
-		if (events.completionTimes_ticket_gate[i] < min_service_ticket_gate)
-			min_service_ticket_gate = events.completionTimes_ticket_gate[i];
-	}
-
-	double timesToCompare[DIM];
-
-	timesToCompare[0] = min_abandon_ticket_machine;
-	timesToCompare[1] = min_abandon_ticket_office;
-	timesToCompare[2] = min_abandon_customer_support;
-	timesToCompare[3] = min_abandon_security_check;
-	timesToCompare[4] = min_abandon_ticket_gate;
-	timesToCompare[5] = min_service_ticket_machine;
-	timesToCompare[6] = min_service_ticket_office;
-	timesToCompare[7] = min_service_customer_support;
-	timesToCompare[8] = min_service_security_check;
-	timesToCompare[9] = min_service_ticket_gate;
-	timesToCompare[10] = events.user_arrival_to_ticket_machine.user_arrival_time;
-	timesToCompare[11] = events.user_arrival_to_ticket_office.user_arrival_time;
-	timesToCompare[12] = events.user_arrival_to_customer_support.user_arrival_time;
-	timesToCompare[13] = events.user_arrival_to_security_check.user_arrival_time;
-	timesToCompare[14] = events.user_arrival_to_ticket_gate.user_arrival_time;
-
-	return get_smallest(timesToCompare);
-}
-
 void initializeEventList(int *n)
 {
 	// Init ticket machine
@@ -325,11 +164,11 @@ void initializeEventList(int *n)
 
 void initializeTime()
 {
-	t.current = 0.0;
-	t.next = 0.0;
+	t->current = 0.0;
+	t->next = 0.0;
 	for (int i = 0; i < 5; i++)
 	{
-		t.last[i] = 0.0;
+		t->last[i] = 0.0;
 	}
 }
 
@@ -367,6 +206,33 @@ void initializeArrivalLoss()
 		loss[i].index_user = 0;
 		loss[i].loss_user = 0;
 	}
+}
+
+void calcultate_area_struct(int *n)
+{
+	int ticket_machine_busy_servers = get_total_busy_servers(n[0], state[0].server_occupation);
+	areas[0].service += (t->next - t->current) * ticket_machine_busy_servers;
+	areas[0].queue += (t->next - t->current) * (state[0].population);
+	areas[0].node += (t->next - t->current) * (state[0].population - ticket_machine_busy_servers);
+
+	int ticket_office_busy_servers = get_total_busy_servers(n[1], state[1].server_occupation);
+	areas[1].service += (t->next - t->current) * ticket_office_busy_servers;
+	areas[1].queue += (t->next - t->current) * (state[1].population);
+	areas[1].node += (t->next - t->current) * (state[1].population - ticket_office_busy_servers);
+
+	int customer_support_busy_servers = get_total_busy_servers(n[2], state[2].server_occupation);
+	areas[2].service += (t->next - t->current) * customer_support_busy_servers;
+	areas[2].queue += (t->next - t->current) * (state[2].population);
+	areas[2].node += (t->next - t->current) * (state[2].population - customer_support_busy_servers);
+
+	int security_check_busy_servers = get_total_busy_servers(n[3], state[3].server_occupation);
+	areas[3].service += (t->next - t->current) * security_check_busy_servers;
+	areas[3].node += (t->next - t->current) * (state[3].population - security_check_busy_servers);
+
+	int ticket_gate_busy_servers = get_total_busy_servers(n[4], state[4].server_occupation);
+	areas[4].service += (t->next - t->current) * ticket_gate_busy_servers;
+	areas[4].queue += (t->next - t->current) * (state[4].population);
+	areas[4].node += (t->next - t->current) * (state[4].population - ticket_gate_busy_servers);
 }
 
 int main(int argc, char **argv)
@@ -419,10 +285,19 @@ int main(int argc, char **argv)
 
 	while (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
 		   events.user_arrival_to_customer_support.is_user_arrival_active || events.user_arrival_to_security_check.is_user_arrival_active ||
-		   events.user_arrival_to_ticket_gate.is_user_arrival_active || !is_system_empty(n))
+		   events.user_arrival_to_ticket_gate.is_user_arrival_active || !is_system_empty(state, n))
 	{
 
-		t.next = get_minimum_time(n);
+		t->next = get_minimum_time(events, state, n);
+		calcultate_area_struct(n);
+
+		struct next_abandon *next_ticket_machine_abandon = get_min_abandon(events.head_ticket_machine);
+		struct next_abandon *next_ticket_office_abandon = get_min_abandon(events.head_ticket_office);
+		struct next_abandon *next_customer_support_abandon = get_min_abandon(events.head_customer_support);
+		struct next_abandon *next_security_check_abandon = get_min_abandon(events.head_security_check);
+		struct next_abandon *next_ticket_ticket_gate_abandon = get_min_abandon(events.head_ticket_gate);
+
+		t->current = t->next;
 	}
 
 	user_arrivals_ticket_machine();
