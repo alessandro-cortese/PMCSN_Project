@@ -1,17 +1,16 @@
-#include "./data_structures/event_list.h"
-#include "./data_structures/states.h"
-#include "./data_structures/area.h"
-#include "./data_structures/time.h"
-#include "./data_structures/loss.h"
-#include "./data_structures/utils.h"
-#include "./headers/ticket_machine.h"
-#include "./headers/ticket_office.h"
-#include "./headers/customer_support.h"
-#include "./headers/security_check.h"
-#include "./headers/ticket_gate.h"
-#include "./headers/constants.h"
-#include "./headers/rngs.h"
-#include "./headers/utility_functions.h"
+#include "./../data_structures/event_list.h"
+#include "./../data_structures/states.h"
+#include "./../data_structures/area.h"
+#include "./../data_structures/time.h"
+#include "./../data_structures/loss.h"
+#include "./../data_structures/utils.h"
+#include "./../headers/ticket_machine.h"
+#include "./../headers/ticket_office.h"
+#include "./../headers/customer_support.h"
+#include "./../headers/security_check.h"
+#include "./../headers/ticket_gate.h"
+#include "./../headers/constants.h"
+#include "./../headers/rngs.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -131,32 +130,40 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     double min_abandon_security_check = (double)INFINITY;
     double min_abandon_ticket_gate = (double)INFINITY;
 
+    struct next_abandon *abandon_ticket_machine = NULL;
+    struct next_abandon *abandon_ticket_office = NULL;
+    struct next_abandon *abandon_customer_support = NULL;
+    struct next_abandon *abandon_security_check = NULL;
+    struct next_abandon *abandon_ticket_gate = NULL;
+
     if (events.head_ticket_machine != NULL)
     {
-        struct next_abandon *abandon_ticket_machine = get_min_abandon(events.head_ticket_machine);
+
+        abandon_ticket_machine = get_min_abandon(events.head_ticket_machine);
         min_abandon_ticket_machine = abandon_ticket_machine->abandonTime;
     }
+
     if (events.head_ticket_office != NULL)
     {
-        struct next_abandon *abandon_ticket_office = get_min_abandon(events.head_ticket_office);
+        abandon_ticket_office = get_min_abandon(events.head_ticket_office);
         min_abandon_ticket_office = abandon_ticket_office->abandonTime;
     }
 
     if (events.head_customer_support != NULL)
     {
-        struct next_abandon *abandon_customer_support = get_min_abandon(events.head_customer_support);
+        abandon_customer_support = get_min_abandon(events.head_customer_support);
         min_abandon_ticket_office = abandon_customer_support->abandonTime;
     }
 
     if (events.head_security_check != NULL)
     {
-        struct next_abandon *abandon_security_check = get_min_abandon(events.head_security_check);
+        abandon_security_check = get_min_abandon(events.head_security_check);
         min_abandon_ticket_office = abandon_security_check->abandonTime;
     }
 
     if (events.head_ticket_gate != NULL)
     {
-        struct next_abandon *abandon_ticket_gate = get_min_abandon(events.head_ticket_gate);
+        abandon_ticket_gate = get_min_abandon(events.head_ticket_gate);
         min_abandon_ticket_office = abandon_ticket_gate->abandonTime;
     }
 
@@ -172,23 +179,23 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     double min_service_security_check = next_queue_time_security_check->completionTime;
     double min_service_ticket_gate = next_queue_time_ticket_gate->completionTime;
 
-    double timesToCompare[DIM];
+    double times[DIM];
 
-    timesToCompare[0] = min_abandon_ticket_machine;
-    timesToCompare[1] = min_abandon_ticket_office;
-    timesToCompare[2] = min_abandon_customer_support;
-    timesToCompare[3] = min_abandon_security_check;
-    timesToCompare[4] = min_abandon_ticket_gate;
-    timesToCompare[5] = min_service_ticket_machine;
-    timesToCompare[6] = min_service_ticket_office;
-    timesToCompare[7] = min_service_customer_support;
-    timesToCompare[8] = min_service_security_check;
-    timesToCompare[9] = min_service_ticket_gate;
-    timesToCompare[10] = events.user_arrival_to_ticket_machine.user_arrival_time;
-    timesToCompare[11] = events.user_arrival_to_ticket_office.user_arrival_time;
-    timesToCompare[12] = events.user_arrival_to_customer_support.user_arrival_time;
-    timesToCompare[13] = events.user_arrival_to_security_check.user_arrival_time;
-    timesToCompare[14] = events.user_arrival_to_ticket_gate.user_arrival_time;
+    times[0] = min_abandon_ticket_machine;
+    times[1] = min_abandon_ticket_office;
+    times[2] = min_abandon_customer_support;
+    times[3] = min_abandon_security_check;
+    times[4] = min_abandon_ticket_gate;
+    times[5] = min_service_ticket_machine;
+    times[6] = min_service_ticket_office;
+    times[7] = min_service_customer_support;
+    times[8] = min_service_security_check;
+    times[9] = min_service_ticket_gate;
+    times[10] = events.user_arrival_to_ticket_machine.user_arrival_time;
+    times[11] = events.user_arrival_to_ticket_office.user_arrival_time;
+    times[12] = events.user_arrival_to_customer_support.user_arrival_time;
+    times[13] = events.user_arrival_to_security_check.user_arrival_time;
+    times[14] = events.user_arrival_to_ticket_gate.user_arrival_time;
 
     free(abandon_ticket_machine);
     free(abandon_ticket_office);
@@ -202,7 +209,7 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     free(next_queue_time_security_check);
     free(next_queue_time_ticket_gate);
 
-    return get_smallest(timesToCompare, DIM);
+    return get_smallest(times, DIM);
 }
 
 int get_total_busy_servers(int num_servers, int *server_list)

@@ -164,6 +164,7 @@ void initializeEventList(int *n)
 
 void initializeTime()
 {
+	t = (struct time *)malloc(sizeof(struct time));
 	t->current = 0.0;
 	t->next = 0.0;
 	for (int i = 0; i < 5; i++)
@@ -289,36 +290,109 @@ int main(int argc, char **argv)
 	{
 
 		t->next = get_minimum_time(events, state, n);
+		// printf("t->next: %f\n", t->next);
+		// printf("t->current:%f\n", t->current);
 		calcultate_area_struct(n);
 
 		struct next_abandon *next_ticket_machine_abandon = get_min_abandon(events.head_ticket_machine);
 		struct next_abandon *next_ticket_office_abandon = get_min_abandon(events.head_ticket_office);
 		struct next_abandon *next_customer_support_abandon = get_min_abandon(events.head_customer_support);
 		struct next_abandon *next_security_check_abandon = get_min_abandon(events.head_security_check);
-		struct next_abandon *next_ticket_ticket_gate_abandon = get_min_abandon(events.head_ticket_gate);
+		struct next_abandon *next_ticket_gate_abandon = get_min_abandon(events.head_ticket_gate);
+
+		struct next_job *next_job_ticket_machine = get_min_queue_time(events, n[0], state[0].server_occupation, 1);
+		struct next_job *next_job_ticket_office = get_min_queue_time(events, n[1], state[1].server_occupation, 2);
+		struct next_job *next_job_customer_support = get_min_queue_time(events, n[2], state[2].server_occupation, 3);
+		struct next_job *next_job_security_check = get_min_queue_time(events, n[3], state[3].server_occupation, 4);
+		struct next_job *next_job_ticket_gate = get_min_queue_time(events, n[4], state[4].server_occupation, 5);
+
+		double min_job_completion_ticket_machine = next_job_ticket_machine->completionTime;
+		double min_job_completion_ticket_office = next_job_ticket_office->completionTime;
+		double min_job_completion_customer_support = next_job_customer_support->completionTime;
+		double min_job_completion_security_check = next_job_security_check->completionTime;
+		double min_job_completion_ticket_gate = next_job_ticket_gate->completionTime;
 
 		t->current = t->next;
+
+		if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
+		{
+			user_arrivals_ticket_machine();
+		}
+		else if (t->current == min_job_completion_ticket_machine)
+		{
+			user_departure_ticket_machine();
+		}
+		else if (t->current == next_ticket_machine_abandon->abandonTime)
+		{
+			abandon_ticket_machine();
+		}
+		else if (t->current == events.user_arrival_to_ticket_office.user_arrival_time)
+		{
+			user_arrivals_ticket_office();
+		}
+		else if (t->current == min_job_completion_ticket_office)
+		{
+			user_departure_ticket_office();
+		}
+		else if (t->current == next_ticket_office_abandon->abandonTime)
+		{
+			abandon_ticket_office();
+		}
+		else if (t->current == events.user_arrival_to_customer_support.is_user_arrival_active)
+		{
+			user_arrivals_customer_support();
+		}
+		else if (t->current == min_job_completion_customer_support)
+		{
+			user_departure_customer_support();
+		}
+		else if (t->current == next_customer_support_abandon->abandonTime)
+		{
+			abandon_customer_support();
+		}
+		else if (t->current == events.user_arrival_to_security_check.user_arrival_time)
+		{
+			user_arrivals_security_check();
+		}
+		else if (t->current == min_job_completion_customer_support)
+		{
+			user_departure_security_check();
+		}
+		else if (t->current == next_security_check_abandon->abandonTime)
+		{
+			abandon_security_check();
+		}
+		else if (t->current == events.user_arrival_to_ticket_gate.user_arrival_time)
+		{
+			user_arrivals_ticket_gate();
+		}
+		else if (t->current == min_job_completion_ticket_gate)
+		{
+			user_departure_ticket_gate();
+		}
+		else if (t->current == next_ticket_gate_abandon->abandonTime)
+		{
+			abandon_ticket_gate();
+		}
+
+		free(next_ticket_machine_abandon);
+		free(next_ticket_office_abandon);
+		free(next_customer_support_abandon);
+		free(next_security_check_abandon);
+		free(next_ticket_gate_abandon);
+
+		free(next_job_ticket_machine);
+		free(next_job_ticket_office);
+		free(next_job_customer_support);
+		free(next_job_security_check);
+		free(next_job_ticket_gate);
+
+		// printf("DOPO\n");
+		// printf("t->next: %f\n", t->next);
+		// printf("t->current:%f\n", t->current);
+
+		// exit(-1);
 	}
-
-	user_arrivals_ticket_machine();
-	user_departure_ticket_machine();
-	abandon_ticket_machine();
-
-	user_arrivals_ticket_office();
-	user_departure_ticket_office();
-	abandon_ticket_office();
-
-	user_arrivals_customer_support();
-	user_departure_customer_support();
-	abandon_customer_support();
-
-	user_arrivals_security_check();
-	user_departure_security_check();
-	abandon_security_check();
-
-	user_arrivals_ticket_gate();
-	user_departure_ticket_gate();
-	abandon_ticket_gate();
 
 	return 0;
 }
