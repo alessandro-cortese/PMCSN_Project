@@ -1,12 +1,145 @@
-#include<stdio.h>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include "../headers/ticket_machine.h"
 
-void user_arrivals_ticket_machine(void){
-	printf("user arrive to ticket machine\n");
+#define MAX_NUM_USER_AHEAD 10
+
+double get_user_arrival_to_ticket_machine(double arrival, double rate)
+{
+	SelectStream(1);
+	arrival += Exponential(rate * (P_TICKET_PURCHASED_FROM_TICKET_STATION * P_TICKET_NOT_PURCHASED));
+	return (arrival);
 }
-void user_departure_ticket_machine(void){
-	printf("user departure to ticket machine\n");
+
+double get_ticket_machine_departure(double start)
+{
+	SelectStream(3);
+	double departure = start + Exponential(SR_TICKET_STATION);
+	return departure;
 }
-void abandon_ticket_machine(void){
+
+double get_abandon_ticket_machine(double arrival)
+{
+	SelectStream(8);
+	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
+	return abandon;
+}
+
+void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+{
+	loss->index_user += 1;
+	state->population += 1;
+	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
+
+	if (events->user_arrival_to_ticket_machine.user_arrival_time > STOP)
+	{
+		events->user_arrival_to_ticket_machine.user_arrival_time = (double)INFINITY;
+		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;
+		time->last[0] = time->current;
+	}
+
+	// Search idle server
+	int idle_offset = -1;
+	for (int i = 0; i < NUMBER_OF_TICKET_MACHINE_SERVER; i++)
+	{
+		if (state->server_occupation[i] == 0)
+		{
+			idle_offset == i;
+			break;
+		}
+	}
+
+	if (idle_offset >= 0)
+	{
+		// Set idle server to busy server and update departure time
+		state->server_occupation[idle_offset] = 1;
+		events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
+	}
+	else if (state->population > (MAX_NUM_USER_AHEAD + NUMBER_OF_TICKET_MACHINE_SERVER))
+	{
+		// If there are more than 20 user, insert in queue of new node in the dropout list.
+		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+		if (!tail_job)
+		{
+			printf("Error in malloc in user arrival in ticket machine!\n");
+			exit(-1);
+		}
+		tail_job->id = loss->index_user;
+		tail_job->abandonTime = get_abandon_ticket_machine(time->current);
+		tail_job->next = NULL;
+		tail_job->prev = events->tail_ticket_machine;
+
+		if (events->tail_ticket_machine != NULL)
+		{
+			events->tail_ticket_machine->next = tail_job;
+		}
+		else
+		{
+			events->head_ticket_machine = tail_job;
+		}
+		events->tail_ticket_machine = tail_job;
+		free(tail_job);
+	}
+}
+void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
+{
+	state->population -= 1;
+
+	// Remove of head node from list of dropout
+	if (events->head_ticket_machine != NULL)
+	{
+		struct user *user_to_remove = events->head_ticket_machine;
+		if (user_to_remove->next == NULL)
+		{
+			events->head_ticket_machine = NULL;
+			events->tail_ticket_machine = NULL;
+		}
+		else
+		{
+			events->head_ticket_machine = user_to_remove->next;
+			events->head_ticket_machine->prev = NULL;
+		}
+		free(user_to_remove);
+	}
+
+	// If the population is bigger of 0 then update server completion time,
+	// otherwise reset data of the server.
+	if (state->population > 0)
+	{
+		events->completionTimes_ticket_machine[server_offset] = get_ticket_machine_departure(time->current);
+	}
+	else
+	{
+		events->completionTimes_ticket_machine[server_offset] = (double)INFINITY;
+		state->server_occupation[server_offset] = 0;
+	}
+
+	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	if(!tail_job){
+		printf("Error in malloc in ticket machine departure!\n");
+		exit(-1);
+	}
+	tail_job->id = loss->index_user;
+	tail_job->abandonTime = get_abandon_ticket_machine(time->current);
+
+	if (events->head_ticket_purchased == NULL)
+	{
+		events->head_ticket_purchased = tail_job;
+		events->head_ticket_purchased->prev = NULL;
+		events->head_ticket_purchased->next = NULL;
+		events->tail_ticket_purchased = tail_job;
+	}
+	else if (events->head_ticket_purchased != NULL)
+	{
+		events->tail_ticket_purchased->next = tail_job;
+		tail_job->prev = events->tail_ticket_purchased;
+		tail_job->next = NULL;
+		events->tail_ticket_purchased = tail_job;
+	}
+}
+void abandon_ticket_machine(void)
+{
 	printf("user abandon to ticket machine\n");
 }

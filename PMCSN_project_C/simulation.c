@@ -25,98 +25,14 @@ struct loss loss[5];
 
 double rate;
 
-double get_user_arrival_to_ticket_machine(double arrival)
-{
-	SelectStream(1);
-	arrival += Exponential(rate * (P_TICKET_PURCHASED_FROM_TICKET_STATION * P_TICKET_NOT_PURCHASED));
-	return (arrival);
-}
-
-double get_user_arrival_to_ticket_office(double arrival)
-{
-	SelectStream(2);
-	arrival += Exponential(rate * P_TICKET_PURCHASED_FROM_TICKET_OFFICE * P_TICKET_NOT_PURCHASED);
-	return (arrival);
-}
-
-double get_ticket_machine_departure(double start)
-{
-	SelectStream(3);
-	double departure = start + Exponential(SR_TICKET_STATION);
-	return departure;
-}
-
-double get_ticket_office_departure(double start)
-{
-	SelectStream(4);
-	double departure = start + Exponential(SR_TICKET_OFFICE_OPERATOR);
-	return departure;
-}
-
-double get_customer_support_departure(double start)
-{
-	SelectStream(5);
-	double departure = start + Exponential(SR_CUSTOMER_SUPPORT_OPERATOR);
-	return departure;
-}
-
-double get_security_check_departure(double start)
-{
-	SelectStream(6);
-	double departure = start + Exponential(SR_SECURITY_CONTROL_OPERATOR);
-	return departure;
-}
-
-double get_ticket_gate_departure(double start)
-{
-	SelectStream(7);
-	double departure = start + Exponential(SR_TICKET_GATE_OPERATOR);
-	return departure;
-}
-
-double get_abandon_ticket_machine(double arrival)
-{
-	SelectStream(8);
-	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
-	return abandon;
-}
-
-double get_abandon_ticket_office(double arrival)
-{
-	SelectStream(9);
-	double abandon = arrival + Exponential(P_LEAVE_TICKET_OFFICE);
-	return abandon;
-}
-
-double get_abandon_customer_support(double arrival)
-{
-	SelectStream(10);
-	double abandon = arrival + Exponential(P_LEAVE_CUSTOMER_SUPPORT);
-	return abandon;
-}
-
-double get_abandon_security_check(double arrival)
-{
-	SelectStream(11);
-	double abandon = arrival + Exponential(P_LEAVE_SECURITY_CONTROL);
-	return abandon;
-}
-
-double get_abandon_ticket_gate(double arrival)
-{
-	SelectStream(12);
-	double abandon = arrival + Exponential(P_LEAVE_TICKET_GATE);
-	return abandon;
-}
-
 void initializeEventList(int *n)
 {
 	// Init ticket machine
-	events.user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(START);
+	events.user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(START, rate);
 	printf("%f\n", events.user_arrival_to_ticket_machine.user_arrival_time);
 	events.user_arrival_to_ticket_machine.is_user_arrival_active = true;
 	// Init ticket office
-	events.user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(START);
+	events.user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(START, rate);
 	printf("%f\n", events.user_arrival_to_ticket_office.user_arrival_time);
 	events.user_arrival_to_ticket_office.is_user_arrival_active = true;
 	// Init customer support
@@ -316,7 +232,7 @@ int main(int argc, char **argv)
 
 		if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
 		{
-			user_arrivals_ticket_machine();
+			user_arrivals_ticket_machine(&events, &t, &state[0], &loss[0]);
 		}
 		else if (t->current == min_job_completion_ticket_machine)
 		{
@@ -387,11 +303,11 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		// printf("DOPO\n");
-		// printf("t->next: %f\n", t->next);
-		// printf("t->current:%f\n", t->current);
+		printf("DOPO\n");
+		printf("t->next: %f\n", t->next);
+		printf("t->current:%f\n", t->current);
 
-		// exit(-1);
+		exit(-1);
 	}
 
 	return 0;

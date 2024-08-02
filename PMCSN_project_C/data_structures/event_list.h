@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 struct user
+// job
 {
     int id;
     double abandonTime;
@@ -29,6 +30,11 @@ struct event_list
     double *completionTimes_ticket_office;
     struct user *head_ticket_office;
     struct user *tail_ticket_office;
+
+    // ticket machine + ticket office users
+    struct user *head_ticket_purchased;
+    struct user *tail_ticket_purchased;
+
     // customer support
     struct user_arrival user_arrival_to_customer_support;
     double *completionTimes_customer_support;

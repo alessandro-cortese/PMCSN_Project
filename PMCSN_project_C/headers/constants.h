@@ -5,6 +5,12 @@
 //Dimension of array of time
 #define DIM 15
 
+//Number of servers of ticket machine service node
+#define NUMBER_OF_TICKET_MACHINE_SERVER 10
+
+//Number of servers of ticket office service node
+#define NUMBER_OF_TICKET_OFFICE_SERVER 5
+
 // Arrival rate of traveller to the station [req/sec]
 #define LAMBDA1 0.129  // [05 - 08]
 #define LAMBDA2 0.6309 // [08 - 19]
