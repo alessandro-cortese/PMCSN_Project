@@ -69,6 +69,11 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
 {
     // GetMinCompletion
     struct next_job *min = (struct next_job *)malloc(sizeof(struct next_job));
+    if (!min)
+    {
+        printf("Error in malloc in get min queue time!\n");
+        exit(-1);
+    }
     min->serverOffset = 0;
     min->completionTime = (double)INFINITY;
     double *completionTimes = NULL;

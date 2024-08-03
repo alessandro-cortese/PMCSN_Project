@@ -10,14 +10,14 @@ double get_user_arrival_to_security_check(double arrival)
 
 double get_security_check_departure(double start)
 {
-	SelectStream(7);
+	SelectStream(8);
 	double departure = start + Exponential(SR_SECURITY_CONTROL_OPERATOR);
 	return departure;
 }
 
 double get_abandon_security_check(double arrival)
 {
-	SelectStream(12);
+	SelectStream(13);
 	double abandon = arrival + Exponential(P_LEAVE_SECURITY_CONTROL);
 	return abandon;
 }

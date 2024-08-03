@@ -26,14 +26,14 @@ double get_user_arrival_to_ticket_gate(double arrival)
 
 double get_ticket_gate_departure(double start)
 {
-	SelectStream(10);
+	SelectStream(11);
 	double departure = start + Exponential(SR_TICKET_GATE_OPERATOR);
 	return departure;
 }
 
 double get_abandon_ticket_gate(double arrival)
 {
-	SelectStream(13);
+	SelectStream(14);
 	double abandon = arrival + Exponential(P_LEAVE_TICKET_GATE);
 	return abandon;
 }

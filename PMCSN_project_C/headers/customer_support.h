@@ -10,9 +10,9 @@
 #include "./headers/rngs.h"
 #include "./headers/utility_functions.h"
 
-double get_user_arrival_to_customer_support(double arrival);
+// double get_user_arrival_to_customer_support(double arrival);
 double get_customer_support_departure(double start);
-double get_abandon_customer_support(double arrival);
-void user_arrivals_customer_support(void);
+// double get_abandon_customer_support(double arrival);
+void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
 void user_departure_customer_support(void);
-void abandon_customer_support(void);
+void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id);

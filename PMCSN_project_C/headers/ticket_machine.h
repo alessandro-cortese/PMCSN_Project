@@ -14,7 +14,7 @@
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate);
 double get_ticket_machine_departure(double start);
-double get_abandon_ticket_machine(double arrival);
-void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss);
-void user_departure_ticket_machine(void);
-void abandon_ticket_machine(void);
+//double get_abandon_ticket_machine(double arrival);
+void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
+void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset);
+void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id);

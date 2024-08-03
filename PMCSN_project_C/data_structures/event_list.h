@@ -20,18 +20,22 @@ struct user_arrival
 
 struct event_list
 {
+    // user arrival to train station that have already the ticket
+    struct user_arrival user_who_has_purchased_ticket;
+
     // ticket machine
     struct user_arrival user_arrival_to_ticket_machine;
     double *completionTimes_ticket_machine;
     struct user *head_ticket_machine;
     struct user *tail_ticket_machine; // todo: understand why head and tail..
+
     // ticket office
     struct user_arrival user_arrival_to_ticket_office;
     double *completionTimes_ticket_office;
     struct user *head_ticket_office;
     struct user *tail_ticket_office;
 
-    // ticket machine + ticket office users
+    // list of job ticket machine + ticket office
     struct user *head_ticket_purchased;
     struct user *tail_ticket_purchased;
 
@@ -40,11 +44,21 @@ struct event_list
     double *completionTimes_customer_support;
     struct user *head_customer_support;
     struct user *tail_customer_support;
+
+    // list of job to security check
+    struct user *head_user_to_security_check;
+    struct user *tail_user_to_security_check;
+
     // security_check
     struct user_arrival user_arrival_to_security_check;
     double *completionTimes_security_check;
     struct user *head_security_check;
     struct user *tail_security_check;
+
+    // list of job to ticket gate
+    struct user *head_user_to_ticket_gate;
+    struct user *tail_user_to_ticket_gate;
+
     // ticket_gate
     struct user_arrival user_arrival_to_ticket_gate;
     double *completionTimes_ticket_gate;

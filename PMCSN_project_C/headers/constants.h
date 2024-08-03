@@ -11,6 +11,9 @@
 //Number of servers of ticket office service node
 #define NUMBER_OF_TICKET_OFFICE_SERVER 5
 
+//Number of servers of customer support service node
+#define NUMBER_OF_CUSTOMER_SUPPORT_SERVER 5
+
 // Arrival rate of traveller to the station [req/sec]
 #define LAMBDA1 0.129  // [05 - 08]
 #define LAMBDA2 0.6309 // [08 - 19]
@@ -21,7 +24,7 @@
 #define P_TICKET_NOT_PURCHASED 0.3679
 #define P_TICKET_PURCHASED_FROM_TICKET_STATION 0.6
 #define P_TICKET_PURCHASED_FROM_TICKET_OFFICE 0.4
-#define P_OF_CUSTOMER_SUPPOR 0.15
+#define P_OF_CUSTOMER_SUPPORT 0.15
 #define P_OF_NOT_CUSTOMER_SUPPORT 0.75
 #define P_OF_SECURITY_CONTROL 0.10
 #define P_OF_NOT_SECURITY_CONTROL 0.9
@@ -34,6 +37,7 @@
 #define P_LEAVE_CUSTOMER_SUPPORT 0.015
 #define P_LEAVE_SECURITY_CONTROL 0.01
 #define P_LEAVE_TICKET_GATE 0.01
+
 
 // Service Rates [sec]
 #define SR_TICKET_STATION 90

@@ -152,6 +152,39 @@ void calcultate_area_struct(int *n)
 	areas[4].node += (t->next - t->current) * (state[4].population - ticket_gate_busy_servers);
 }
 
+void append_user_arrival_ticket_purchased()
+{
+	SelectStream(1);
+	double arrival;
+	arrival += Exponential(rate * P_OF_TICKET_PURCHASED_ONLINE);
+	events.user_who_has_purchased_ticket.is_user_arrival_active = arrival;
+
+	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	if (!tail_job)
+	{
+		printf("Error in malloc in append user arrival ticket purchased!\n");
+		exit(-1);
+	}
+	tail_job->id = loss->index_user;
+	tail_job->abandonTime = t->current;
+
+	if (events.head_ticket_purchased == NULL)
+	{
+		events.head_ticket_purchased = tail_job;
+		events.head_ticket_purchased->prev = NULL;
+		events.head_ticket_purchased->next = NULL;
+		events.tail_ticket_purchased = tail_job;
+	}
+	else if (events.head_ticket_purchased != NULL)
+	{
+		events.tail_ticket_purchased->next = tail_job;
+		tail_job->prev = events.tail_ticket_purchased;
+		tail_job->next = NULL;
+		events.tail_ticket_purchased = tail_job;
+	}
+	free(tail_job);
+}
+
 int main(int argc, char **argv)
 {
 
@@ -230,29 +263,33 @@ int main(int argc, char **argv)
 
 		t->current = t->next;
 
-		if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
+		if (t->current == events.user_who_has_purchased_ticket.user_arrival_time)
 		{
-			user_arrivals_ticket_machine(&events, &t, &state[0], &loss[0]);
+			append_user_arrival_ticket_purchased();
+		}
+		else if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
+		{
+			user_arrivals_ticket_machine(&events, &t, &state[0], &loss[0], rate);
 		}
 		else if (t->current == min_job_completion_ticket_machine)
 		{
-			user_departure_ticket_machine();
+			user_departure_ticket_machine(&events, &t, &state[0], &loss[0], next_job_ticket_machine->serverOffset);
 		}
 		else if (t->current == next_ticket_machine_abandon->abandonTime)
 		{
-			abandon_ticket_machine();
+			abandon_ticket_machine(&events, &state[0], &loss[0], next_ticket_machine_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_ticket_office.user_arrival_time)
 		{
-			user_arrivals_ticket_office();
+			user_arrivals_ticket_office(&events, &t, &state[1], &loss[1], rate);
 		}
 		else if (t->current == min_job_completion_ticket_office)
 		{
-			user_departure_ticket_office();
+			user_departure_ticket_office(&events, &t, &state[1], &loss[1], next_job_ticket_office->serverOffset);
 		}
 		else if (t->current == next_ticket_office_abandon->abandonTime)
 		{
-			abandon_ticket_office();
+			abandon_ticket_office(&events, &state[1], &loss[1], next_ticket_office_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_customer_support.is_user_arrival_active)
 		{

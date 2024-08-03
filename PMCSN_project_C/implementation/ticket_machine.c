@@ -3,29 +3,29 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "../headers/ticket_machine.h"
-
-#define MAX_NUM_USER_AHEAD 10
+#include "../headers/rngs.h"
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
-	SelectStream(1);
+	SelectStream(2);
 	arrival += Exponential(rate * (P_TICKET_PURCHASED_FROM_TICKET_STATION * P_TICKET_NOT_PURCHASED));
 	return (arrival);
 }
 
 double get_ticket_machine_departure(double start)
 {
-	SelectStream(3);
+	SelectStream(4);
 	double departure = start + Exponential(SR_TICKET_STATION);
 	return departure;
 }
 
-double get_abandon_ticket_machine(double arrival)
-{
-	SelectStream(8);
-	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
-	return abandon;
-}
+//To undestand why exists...
+// double get_abandon_ticket_machine(double arrival)
+// {
+// 	SelectStream(9);
+// 	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
+// 	return abandon;
+// }
 
 void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
@@ -57,9 +57,8 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
 	}
-	else if (state->population > (MAX_NUM_USER_AHEAD + NUMBER_OF_TICKET_MACHINE_SERVER))
+	else if (Random() <= P_LEAVE_TICKET_STATION)
 	{
-		// If there are more than 20 user, insert in queue of new node in the dropout list.
 		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
 		if (!tail_job)
 		{
@@ -67,19 +66,11 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 			exit(-1);
 		}
 		tail_job->id = loss->index_user;
-		tail_job->abandonTime = get_abandon_ticket_machine(time->current);
+		tail_job->abandonTime = time->current;
 		tail_job->next = NULL;
 		tail_job->prev = events->tail_ticket_machine;
 
-		if (events->tail_ticket_machine != NULL)
-		{
-			events->tail_ticket_machine->next = tail_job;
-		}
-		else
-		{
-			events->head_ticket_machine = tail_job;
-		}
-		events->tail_ticket_machine = tail_job;
+		abandon_ticket_machine(events, state, loss, tail_job->id);
 		free(tail_job);
 	}
 }
@@ -117,12 +108,13 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 	}
 
 	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
-	if(!tail_job){
+	if (!tail_job)
+	{
 		printf("Error in malloc in ticket machine departure!\n");
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->abandonTime = get_abandon_ticket_machine(time->current);
+	tail_job->abandonTime = get_ticket_machine_departure(time->current);
 
 	if (events->head_ticket_purchased == NULL)
 	{
@@ -139,7 +131,39 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		events->tail_ticket_purchased = tail_job;
 	}
 }
-void abandon_ticket_machine(void)
+
+void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-	printf("user abandon to ticket machine\n");
+	struct user *current = events->head_ticket_machine;
+	while (current != NULL)
+	{
+		if (current->id == job_id)
+			break;
+		current = current->next;
+	}
+
+	struct user *prev = current->prev;
+	struct user *next = current->next;
+
+	if (prev != NULL)
+	{
+		prev->next = current->next;
+	}
+	else
+	{
+		events->head_ticket_machine = next;
+	}
+
+	if (next != NULL)
+	{
+		next->prev = current->prev;
+	}
+	else
+	{
+		events->head_ticket_machine = prev;
+	}
+
+	free(current);
+	loss->loss_user += 1;
+	state->population -= 1;
 }
