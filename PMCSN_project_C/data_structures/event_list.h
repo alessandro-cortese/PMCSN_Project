@@ -55,10 +55,6 @@ struct event_list
     struct user *head_security_check;
     struct user *tail_security_check;
 
-    // list of job to ticket gate
-    struct user *head_user_to_ticket_gate;
-    struct user *tail_user_to_ticket_gate;
-
     // ticket_gate
     struct user_arrival user_arrival_to_ticket_gate;
     double *completionTimes_ticket_gate;

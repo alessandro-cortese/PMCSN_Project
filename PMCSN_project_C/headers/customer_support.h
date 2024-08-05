@@ -14,5 +14,5 @@
 double get_customer_support_departure(double start);
 // double get_abandon_customer_support(double arrival);
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
-void user_departure_customer_support(void);
+void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate);
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id);

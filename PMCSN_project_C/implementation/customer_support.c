@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "../headers/customer_support.h"
+#include "../headers/ticket_office.h"
 
 // we don't need to model the stream cause it's the previous one
 //  double get_user_arrival_to_customer_support(double arrival)
@@ -102,7 +103,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	}
 }
 
-void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
+void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
 	state->population -= 1;
 
@@ -134,21 +135,39 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 		state->server_occupation[server_offset] = 0;
 	}
 
-	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
-	if (!tail_job)
+	// feedback is here
+	if (Random() <= P_OF_CHANGE_TICKET)
 	{
-		printf("Error in malloc in ticket machine departure!\n");
-		exit(-1);
+		user_arrivals_ticket_office(events, time, state, loss, rate);
 	}
+	else
+	{
+		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+		if (!tail_job)
+		{
+			printf("Error in malloc in customer support departure!\n");
+			exit(-1);
+		}
 
-	tail_job->id = loss->index_user;
-	tail_job->abandonTime = get_ticket_machine_departure(time->current);
+		tail_job->id = loss->index_user;
+		tail_job->abandonTime = get_customer_support_departure(time->current);
 
-	if(Random() <=  P_OF_CHANGE_TICKET){
-		//Feedback to queue of ticket office
+		if (events->head_user_to_security_check == NULL)
+		{
+			events->head_user_to_security_check = tail_job;
+			events->head_user_to_security_check->prev = NULL;
+			events->head_user_to_security_check->next = NULL;
+			events->tail_user_to_security_check = tail_job;
+		}
+		else if (events->head_user_to_security_check != NULL)
+		{
+			events->head_user_to_security_check->next = tail_job;
+			tail_job->prev = events->tail_user_to_security_check;
+			tail_job->next = NULL;
+			events->tail_user_to_security_check = tail_job;
+		}
+		free(tail_job);
 	}
-
-
 }
 
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)

@@ -2,17 +2,20 @@
 #define STOP 10000.0
 #define SEED 123456789
 
-//Dimension of array of time
+// Dimension of array of time
 #define DIM 15
 
-//Number of servers of ticket machine service node
+// Number of servers of ticket machine service node
 #define NUMBER_OF_TICKET_MACHINE_SERVER 10
 
-//Number of servers of ticket office service node
+// Number of servers of ticket office service node
 #define NUMBER_OF_TICKET_OFFICE_SERVER 5
 
-//Number of servers of customer support service node
+// Number of servers of customer support service node
 #define NUMBER_OF_CUSTOMER_SUPPORT_SERVER 5
+
+// Number of servers of security check service node
+#define NUMBER_OF_SECURITY_CHECK_SERVERS 3
 
 // Arrival rate of traveller to the station [req/sec]
 #define LAMBDA1 0.129  // [05 - 08]
@@ -26,7 +29,7 @@
 #define P_TICKET_PURCHASED_FROM_TICKET_OFFICE 0.4
 #define P_OF_CUSTOMER_SUPPORT 0.15
 #define P_OF_NOT_CUSTOMER_SUPPORT 0.75
-#define P_OF_SECURITY_CONTROL 0.10
+#define P_OF_SECURITY_CHECK 0.10
 #define P_OF_NOT_SECURITY_CONTROL 0.9
 #define P_OF_CHANGE_TICKET 0.07
 #define P_OF_NOT_CHANGE_TICKET 0.93
@@ -37,7 +40,6 @@
 #define P_LEAVE_CUSTOMER_SUPPORT 0.015
 #define P_LEAVE_SECURITY_CONTROL 0.01
 #define P_LEAVE_TICKET_GATE 0.01
-
 
 // Service Rates [sec]
 #define SR_TICKET_STATION 90

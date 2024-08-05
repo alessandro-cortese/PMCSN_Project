@@ -102,8 +102,6 @@ void initializeArea()
 
 void initializeStateVariables(int *m)
 {
-
-	//
 	for (int j = 0; j < 5; j++)
 	{
 		state[j].population = 0;
@@ -117,7 +115,6 @@ void initializeStateVariables(int *m)
 
 void initializeArrivalLoss()
 {
-
 	for (int i = 0; i < 5; i++)
 	{
 		loss[i].index_user = 0;
@@ -293,15 +290,15 @@ int main(int argc, char **argv)
 		}
 		else if (t->current == events.user_arrival_to_customer_support.is_user_arrival_active)
 		{
-			user_arrivals_customer_support();
+			user_arrivals_customer_support(&events, &t, &state[2], &loss[2], rate);
 		}
 		else if (t->current == min_job_completion_customer_support)
 		{
-			user_departure_customer_support();
+			user_departure_customer_support(&events, &t, &state[2], &loss[2], next_job_security_check->serverOffset, rate);
 		}
 		else if (t->current == next_customer_support_abandon->abandonTime)
 		{
-			abandon_customer_support();
+			abandon_customer_support(&events, &state[2], &loss[2], next_customer_support_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_security_check.user_arrival_time)
 		{

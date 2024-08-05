@@ -56,6 +56,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 		// Set idle server to busy server and update departure time
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
+		//Prendo il job che sta in testa e lo processo
 	}
 	else if (Random() <= P_LEAVE_TICKET_STATION)
 	{
