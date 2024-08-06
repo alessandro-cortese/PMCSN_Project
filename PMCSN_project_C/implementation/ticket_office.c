@@ -69,7 +69,12 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 		tail_job->next = NULL;
 		tail_job->prev = events->tail_ticket_office;
 
-		abandon_ticket_office(events, state, loss, tail_job->id);
+		// If is the first time that a job abandon the queue
+		if (events->head_ticket_office == NULL)
+		{
+			events->head_ticket_office = tail_job;
+			events->tail_ticket_office = tail_job;
+		}
 		free(tail_job);
 	}
 }
@@ -77,23 +82,6 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
 	state->population -= 1;
-
-	// Remove of head node from list of dropout
-	if (events->head_ticket_office != NULL)
-	{
-		struct user *user_to_remove = events->head_ticket_office;
-		if (user_to_remove->next == NULL)
-		{
-			events->head_ticket_office = NULL;
-			events->tail_ticket_office = NULL;
-		}
-		else
-		{
-			events->head_ticket_office = user_to_remove->next;
-			events->head_ticket_office->prev = NULL;
-		}
-		free(user_to_remove);
-	}
 
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
@@ -134,36 +122,39 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-	struct user *current = events->head_ticket_office;
-	while (current != NULL)
+	if (events->head_ticket_office != NULL)
 	{
-		if (current->id == job_id)
-			break;
-		current = current->next;
-	}
+		struct user *current = events->head_ticket_office;
+		while (current != NULL)
+		{
+			if (current->id == job_id)
+				break;
+			current = current->next;
+		}
 
-	struct user *prev = current->prev;
-	struct user *next = current->next;
+		struct user *prev = current->prev;
+		struct user *next = current->next;
 
-	if (prev != NULL)
-	{
-		prev->next = current->next;
-	}
-	else
-	{
-		events->head_ticket_office = next;
-	}
+		if (prev != NULL)
+		{
+			prev->next = current->next;
+		}
+		else
+		{
+			events->head_ticket_office = next;
+		}
 
-	if (next != NULL)
-	{
-		next->prev = current->prev;
-	}
-	else
-	{
-		events->head_ticket_office = prev;
-	}
+		if (next != NULL)
+		{
+			next->prev = current->prev;
+		}
+		else
+		{
+			events->head_ticket_office = prev;
+		}
 
-	free(current);
-	loss->loss_user += 1;
-	state->population -= 1;
+		free(current);
+		loss->loss_user += 1;
+		state->population -= 1;
+	}
 }

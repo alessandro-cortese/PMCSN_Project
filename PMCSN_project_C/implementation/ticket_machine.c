@@ -19,13 +19,13 @@ double get_ticket_machine_departure(double start)
 	return departure;
 }
 
-//To undestand why exists...
-// double get_abandon_ticket_machine(double arrival)
-// {
-// 	SelectStream(9);
-// 	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
-// 	return abandon;
-// }
+// To undestand why exists...
+//  double get_abandon_ticket_machine(double arrival)
+//  {
+//  	SelectStream(9);
+//  	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
+//  	return abandon;
+//  }
 
 void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
@@ -56,9 +56,10 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 		// Set idle server to busy server and update departure time
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
-		//Prendo il job che sta in testa e lo processo
+		// Prendo il job che sta in testa e lo processo
 	}
-	else if (Random() <= P_LEAVE_TICKET_STATION)
+
+	if (Random() <= P_LEAVE_TICKET_STATION)
 	{
 		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
 		if (!tail_job)
@@ -71,7 +72,13 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 		tail_job->next = NULL;
 		tail_job->prev = events->tail_ticket_machine;
 
-		abandon_ticket_machine(events, state, loss, tail_job->id);
+		// If the first time that a job adandon the queue
+		if (events->head_ticket_machine == NULL)
+		{
+			events->head_ticket_machine = tail_job;
+			events->tail_ticket_machine = tail_job;
+		}
+
 		free(tail_job);
 	}
 }
@@ -79,22 +86,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 {
 	state->population -= 1;
 
-	// Remove of head node from list of dropout
-	if (events->head_ticket_machine != NULL)
-	{
-		struct user *user_to_remove = events->head_ticket_machine;
-		if (user_to_remove->next == NULL)
-		{
-			events->head_ticket_machine = NULL;
-			events->tail_ticket_machine = NULL;
-		}
-		else
-		{
-			events->head_ticket_machine = user_to_remove->next;
-			events->head_ticket_machine->prev = NULL;
-		}
-		free(user_to_remove);
-	}
+	// TODO: per il modello migliorativo considerare una coda con priorità
 
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
@@ -108,6 +100,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		state->server_occupation[server_offset] = 0;
 	}
 
+	// Add a node into ticket purchased queue
 	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
 	if (!tail_job)
 	{
@@ -131,40 +124,44 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		tail_job->next = NULL;
 		events->tail_ticket_purchased = tail_job;
 	}
+	free(tail_job);
 }
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-	struct user *current = events->head_ticket_machine;
-	while (current != NULL)
+	if (events->head_ticket_machine != NULL)
 	{
-		if (current->id == job_id)
-			break;
-		current = current->next;
-	}
+		struct user *current = events->head_ticket_machine;
+		while (current != NULL)
+		{
+			if (current->id == job_id)
+				break;
+			current = current->next;
+		}
 
-	struct user *prev = current->prev;
-	struct user *next = current->next;
+		struct user *prev = current->prev;
+		struct user *next = current->next;
 
-	if (prev != NULL)
-	{
-		prev->next = current->next;
-	}
-	else
-	{
-		events->head_ticket_machine = next;
-	}
+		if (prev != NULL)
+		{
+			prev->next = current->next;
+		}
+		else
+		{
+			events->head_ticket_machine = next;
+		}
 
-	if (next != NULL)
-	{
-		next->prev = current->prev;
-	}
-	else
-	{
-		events->head_ticket_machine = prev;
-	}
+		if (next != NULL)
+		{
+			next->prev = current->prev;
+		}
+		else
+		{
+			events->head_ticket_machine = prev;
+		}
 
-	free(current);
-	loss->loss_user += 1;
-	state->population -= 1;
+		free(current);
+		loss->loss_user += 1;
+		state->population -= 1;
+	}
 }

@@ -45,6 +45,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	}
 	if (Random() <= P_OF_CUSTOMER_SUPPORT)
 	{
+
 		loss->index_user += 1;
 		state->population += 1;
 		events->user_arrival_to_customer_support.user_arrival_time = get_user_arrival_to_customer_support(rate);
@@ -59,7 +60,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		int idle_offset = -1;
 		for (int i = 0; i < NUMBER_OF_CUSTOMER_SUPPORT_SERVER; i++)
 		{
-
 			if (state->server_occupation[i] == 0)
 			{
 				idle_offset == i;
@@ -73,6 +73,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
 		}
+
 		else if (Random() <= P_LEAVE_CUSTOMER_SUPPORT)
 		{
 			tail_job->id = loss->index_user;
@@ -80,12 +81,17 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			tail_job->next = NULL;
 			tail_job->prev = events->tail_ticket_machine;
 
-			abandon_customer_support(events, state, loss, tail_job->id);
 			free(tail_job);
 		}
 	}
 	else
 	{
+		// CASE 2: skip customer support {remove node from ticket purchased and add a node into head security check queue}
+		tail_job = events->head_ticket_purchased;
+		events->head_ticket_purchased = tail_job->next;
+		tail_job->next = NULL;
+		tail_job->prev = NULL;
+
 		if (events->head_user_to_security_check == NULL)
 		{
 			events->head_user_to_security_check = tail_job;
@@ -100,6 +106,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			tail_job->next = NULL;
 			events->tail_user_to_security_check = tail_job;
 		}
+		free(tail_job);
 	}
 }
 
