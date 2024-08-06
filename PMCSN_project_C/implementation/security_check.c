@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "../headers/security_check.h"
+#include "../data_structures/event_list.h"
+
+int user[NUMBER_OF_SECURITY_CHECK_SERVERS];
+int busy_server = 0;
 
 // TODO: we have to understad why exist...
 // double get_user_arrival_to_security_check(double arrival)
@@ -35,7 +39,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		printf("Error in malloc in user arrival in security check!\n");
 		exit(-1);
 	}
-	if (Random() <= P_OF_SECURITY_CHECK)
+	if (Random() <= P_OF_SECURITY_CHECK && busy_server < NUMBER_OF_SECURITY_CHECK_SERVERS)
 	{
 		loss->index_user += 1;
 		state->population += 1;
@@ -57,16 +61,24 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 				break;
 			}
 		}
-		
+
 		if (idle_offset >= 0)
 		{
 			// Set idle server to busy server and update departure time
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
+			user[idle_offset] = events->head_user_to_security_check->id;
+			events->head_user_to_security_check = events->head_user_to_security_check->next;
+			busy_server++;
 		}
 	}
 	else
 	{
+		// CASE 2: remove node from head_user_to_security_check and add to head_ticket_gate (skip)
+
+		tail_job = events->head_user_to_security_check;
+		events->head_user_to_security_check = events->head_user_to_security_check->next;
+
 		if (events->head_ticket_gate == NULL)
 		{
 			events->head_ticket_gate = tail_job;
@@ -87,28 +99,14 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
 	state->population -= 1;
-
-	if (events->head_security_check != NULL)
-	{
-		struct user *user_to_remove = events->head_security_check;
-		if (user_to_remove->next == NULL)
-		{
-			events->head_security_check = NULL;
-			events->tail_security_check = NULL;
-		}
-		else
-		{
-			events->head_security_check = user_to_remove->next;
-			events->head_security_check->prev = NULL;
-		}
-		free(user_to_remove);
-	}
+	busy_server -= 1;
 
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
 	if (state->population > 0)
 	{
 		events->completionTimes_security_check[server_offset] = get_security_check_departure(time->current);
+		state->server_occupation[server_offset] = 0;
 	}
 	else
 	{
@@ -146,41 +144,8 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	}
 	else
 	{
-		//Uscita dal sistema
+		// prob of having false document or other problems
+		events->completionTimes_security_check[server_offset] = (double)INFINITY;
+		state->server_occupation[server_offset] = 0;
 	}
-}
-void abandon_security_check(struct event_list *events, struct states *state, struct loss *loss, int job_id)
-{
-	struct user *current = events->head_security_check;
-	while (current != NULL)
-	{
-		if (current->id == job_id)
-			break;
-		current = current->next;
-	}
-
-	struct user *prev = current->prev;
-	struct user *next = current->next;
-
-	if (prev != NULL)
-	{
-		prev->next = current->next;
-	}
-	else
-	{
-		events->head_security_check = next;
-	}
-
-	if (next != NULL)
-	{
-		next->prev = current->prev;
-	}
-	else
-	{
-		events->head_security_check = prev;
-	}
-
-	free(current);
-	loss->loss_user += 1;
-	state->population -= 1;
 }

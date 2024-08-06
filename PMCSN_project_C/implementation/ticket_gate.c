@@ -38,15 +38,11 @@ double get_abandon_ticket_gate(double arrival)
 	return abandon;
 }
 
-void user_arrivals_ticket_gate(void)
+void user_arrivals_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	printf("user arrive to ticket gate\n");
+	//FINIAMO DOMANI..... SI SPERA BENE
 }
 void user_departure_ticket_gate(void)
 {
 	printf("user departure to ticket gate\n");
-}
-void abandon_ticket_gate(void)
-{
-	printf("user abandon to ticket gate\n");
 }

@@ -308,10 +308,6 @@ int main(int argc, char **argv)
 		{
 			user_departure_security_check();
 		}
-		else if (t->current == next_security_check_abandon->abandonTime)
-		{
-			abandon_security_check();
-		}
 		else if (t->current == events.user_arrival_to_ticket_gate.user_arrival_time)
 		{
 			user_arrivals_ticket_gate();

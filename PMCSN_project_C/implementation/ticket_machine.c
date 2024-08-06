@@ -93,6 +93,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 	if (state->population > 0)
 	{
 		events->completionTimes_ticket_machine[server_offset] = get_ticket_machine_departure(time->current);
+		state->server_occupation[server_offset] = 0;
 	}
 	else
 	{

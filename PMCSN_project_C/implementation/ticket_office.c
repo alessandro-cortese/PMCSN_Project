@@ -88,6 +88,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 	if (state->population > 0)
 	{
 		events->completionTimes_ticket_office[server_offset] = get_ticket_office_departure(time->current);
+		state->server_occupation[server_offset] = 0;
 	}
 	else
 	{
@@ -118,6 +119,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		tail_job->next = NULL;
 		events->tail_ticket_purchased = tail_job;
 	}
+	free(tail_job);
 }
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)

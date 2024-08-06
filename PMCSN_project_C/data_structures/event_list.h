@@ -26,12 +26,13 @@ struct event_list
     // ticket machine
     struct user_arrival user_arrival_to_ticket_machine;
     double *completionTimes_ticket_machine;
+    // abandon queue ticket machine
     struct user *head_ticket_machine;
-    struct user *tail_ticket_machine; // todo: understand why head and tail..
-
+    struct user *tail_ticket_machine;
     // ticket office
     struct user_arrival user_arrival_to_ticket_office;
     double *completionTimes_ticket_office;
+    // abandon queue ticket office
     struct user *head_ticket_office;
     struct user *tail_ticket_office;
 
@@ -42,8 +43,12 @@ struct event_list
     // customer support
     struct user_arrival user_arrival_to_customer_support;
     double *completionTimes_customer_support;
+    // abandon queue customer support
     struct user *head_customer_support;
     struct user *tail_customer_support;
+    // queue of job in customer support
+    struct user *head_queue_customer_support;
+    struct user *tail_queue_customer_support;
 
     // list of job to security check
     struct user *head_user_to_security_check;
