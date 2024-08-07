@@ -43,13 +43,14 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	{
 		loss->index_user += 1;
 		state->population += 1;
-		events->user_arrival_to_security_check.user_arrival_time = get_security_check_departure(rate);
+		events->user_arrival_to_security_check.user_arrival_time = events->head_user_to_security_check->arrival_time;
+
+		time->last[3] = time->current;
 
 		if (events->user_arrival_to_security_check.user_arrival_time > STOP)
 		{
 			events->user_arrival_to_security_check.is_user_arrival_active = (double)INFINITY;
 			events->user_arrival_to_security_check.is_user_arrival_active = false;
-			time->last[3] = time->current;
 		}
 
 		int idle_offset = -1;
@@ -124,7 +125,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	if (!(Random() <= P_LEAVE_SECURITY_CONTROL))
 	{
 		tail->id = loss->index_user;
-		tail->arrival_time = get_security_check_departure(time->current);
+		tail->arrival_time = time->current;
 
 		if (events->head_ticket_gate == NULL)
 		{

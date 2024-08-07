@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "../headers/ticket_machine.h"
 #include "../headers/rngs.h"
+#include "../data_structures/event_list.h"
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
@@ -31,13 +32,16 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 {
 	loss->index_user += 1;
 	state->population += 1;
+
+	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
+
+	time->last[0] = time->current;
 
 	if (events->user_arrival_to_ticket_machine.user_arrival_time > STOP)
 	{
 		events->user_arrival_to_ticket_machine.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;
-		time->last[0] = time->current;
 	}
 
 	// Search idle server
@@ -82,6 +86,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 		free(tail_job);
 	}
 }
+
 void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
 	state->population -= 1;
@@ -109,7 +114,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->arrival_time = get_ticket_machine_departure(time->current);
+	tail_job->arrival_time = time->current;
 
 	if (events->head_ticket_purchased == NULL)
 	{

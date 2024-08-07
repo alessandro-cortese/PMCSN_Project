@@ -45,6 +45,8 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_ticket_gate[idle_offset] = get_ticket_gate_departure(rate);
 
+		time->last[4] = time->current;
+
 		struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 		if (!tail_job)
 		{
@@ -66,7 +68,7 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 			tail_job->next = NULL;
 			tail_job->prev = NULL;
 			free(tail_job);
-			events->user_arrival_to_ticket_gate.user_arrival_time = time->current;
+			events->user_arrival_to_ticket_gate.user_arrival_time = events->head_ticket_gate->arrival_time;
 		}
 	}
 }

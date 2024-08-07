@@ -47,12 +47,14 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 		loss->index_user += 1;
 		state->population += 1;
-		events->user_arrival_to_customer_support.user_arrival_time = get_user_arrival_to_customer_support(rate);
+		events->user_arrival_to_customer_support.user_arrival_time = events->head_ticket_purchased->arrival_time;
+
+		time->last[2] = time->current;
+
 		if (events->user_arrival_to_customer_support.user_arrival_time > STOP)
 		{
 			events->user_arrival_to_customer_support.user_arrival_time = (double)INFINITY;
 			events->user_arrival_to_customer_support.is_user_arrival_active = false;
-			time->last[2] = time->current;
 		}
 
 		int idle_offset = -1;
@@ -204,7 +206,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 	else
 	{
-		tail_job->arrival_time = get_customer_support_departure(time->current);
+		tail_job->arrival_time = time->current;
 
 		if (events->head_user_to_security_check == NULL)
 		{

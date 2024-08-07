@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "../headers/ticket_office.h"
+#include "../data_structures/event_list.h"
 
 double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
@@ -32,11 +33,12 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	state->population += 1;
 	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
 
+	time->last[1] = time->current;
+
 	if (events->user_arrival_to_ticket_office.user_arrival_time > STOP)
 	{
 		events->user_arrival_to_ticket_office.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;
-		time->last[0] = time->current;
 	}
 
 	// Search idle server
@@ -103,7 +105,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->arrival_time = get_ticket_office_departure(time->current);
+	tail_job->arrival_time = time->current;
 
 	if (events->head_ticket_purchased == NULL)
 	{

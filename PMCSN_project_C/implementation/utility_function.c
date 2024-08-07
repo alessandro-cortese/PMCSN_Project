@@ -39,7 +39,7 @@ bool is_system_empty(struct states *state, int *n)
     }
 }
 
-struct next_abandon *get_min_abandon(struct user *head)
+struct next_abandon *get_min_abandon(struct abandon_node *head)
 {
     // GetMinAbandon
     struct next_abandon *min = (struct next_abandon *)malloc(sizeof(struct next_abandon *));
@@ -47,17 +47,17 @@ struct next_abandon *get_min_abandon(struct user *head)
     if (head != NULL)
     {
         min->user_Id = head->id;
-        min->abandonTime = head->abandonTime;
+        min->abandonTime = head->abandon_time;
     }
 
-    struct user *current = head;
+    struct abandon_node *current = head;
 
     while (current != NULL)
     {
-        if (current->abandonTime < min->abandonTime)
+        if (current->abandon_time < min->abandonTime)
         {
             min->user_Id = current->id;
-            min->abandonTime = current->abandonTime;
+            min->abandonTime = current->abandon_time;
         }
         current = current->next;
     }

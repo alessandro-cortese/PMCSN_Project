@@ -156,14 +156,14 @@ void append_user_arrival_ticket_purchased()
 	arrival += Exponential(rate * P_OF_TICKET_PURCHASED_ONLINE);
 	events.user_who_has_purchased_ticket.is_user_arrival_active = arrival;
 
-	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in append user arrival ticket purchased!\n");
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->abandonTime = t->current;
+	tail_job->arrival_time = t->current;
 
 	if (events.head_ticket_purchased == NULL)
 	{
@@ -230,9 +230,12 @@ int main(int argc, char **argv)
 	PlantSeeds(SEED);
 	initializeEventList(n);
 
-	while (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
+	int i = 0;
+
+	while (/*events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
 		   events.user_arrival_to_customer_support.is_user_arrival_active || events.user_arrival_to_security_check.is_user_arrival_active ||
-		   events.user_arrival_to_ticket_gate.is_user_arrival_active || !is_system_empty(state, n))
+		   events.user_arrival_to_ticket_gate.is_user_arrival_active || !is_system_empty(state, n)*/
+		   i < 10)
 	{
 
 		t->next = get_minimum_time(events, state, n);
@@ -302,23 +305,15 @@ int main(int argc, char **argv)
 		}
 		else if (t->current == events.user_arrival_to_security_check.user_arrival_time)
 		{
-			user_arrivals_security_check();
-		}
-		else if (t->current == min_job_completion_customer_support)
-		{
-			user_departure_security_check();
+			user_arrivals_security_check(&events, &t, &state[3], &loss[3], rate);
 		}
 		else if (t->current == events.user_arrival_to_ticket_gate.user_arrival_time)
 		{
-			user_arrivals_ticket_gate();
+			user_arrivals_ticket_gate(&events, &t, &state[4], &loss[4], rate);
 		}
 		else if (t->current == min_job_completion_ticket_gate)
 		{
-			user_departure_ticket_gate();
-		}
-		else if (t->current == next_ticket_gate_abandon->abandonTime)
-		{
-			abandon_ticket_gate();
+			user_departure_ticket_gate(&events, &t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
 
 		free(next_ticket_machine_abandon);
@@ -338,6 +333,7 @@ int main(int argc, char **argv)
 		printf("t->current:%f\n", t->current);
 
 		exit(-1);
+		i++;
 	}
 
 	return 0;
