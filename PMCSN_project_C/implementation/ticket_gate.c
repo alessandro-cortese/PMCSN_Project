@@ -45,7 +45,7 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_ticket_gate[idle_offset] = get_ticket_gate_departure(rate);
 
-		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+		struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 		if (!tail_job)
 		{
 			printf("Error in malloc in user arrival in ticket gate!\n");
@@ -69,7 +69,6 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 			events->user_arrival_to_ticket_gate.user_arrival_time = time->current;
 		}
 	}
-	
 }
 void user_departure_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {

@@ -35,7 +35,7 @@ double get_customer_support_departure(double start)
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
 	// TODO: Define a function with different stream
-	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in user arrival in customer support!\n");
@@ -114,28 +114,36 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 		if (Random() <= P_LEAVE_CUSTOMER_SUPPORT)
 		{
+
+			struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
+			if (!abandon_job)
+			{
+				printf("Error in malloc in user arrival in customer support!\n");
+				exit(-1);
+			}
+
 			// CASE 2: delete a node from head_ticket_purchased and add to abandon customer support queue
-			tail_job = events->head_ticket_purchased;
+			abandon_job = events->head_ticket_purchased;
 			events->head_ticket_purchased = tail_job->next;
 
-			tail_job->id = loss->index_user;
-			tail_job->abandonTime = time->current;
+			abandon_job->id = loss->index_user;
+			abandon_job->abandon_time = time->current;
 
 			if (events->head_customer_support == NULL)
 			{
-				events->head_customer_support = tail_job;
+				events->head_customer_support = abandon_job;
 				events->head_customer_support->prev = NULL;
 				events->head_customer_support->next = NULL;
-				events->tail_customer_support = tail_job;
+				events->tail_customer_support = abandon_job;
 			}
 			else if (events->head_customer_support != NULL)
 			{
-				events->tail_customer_support->next = tail_job;
-				tail_job->prev = events->tail_customer_support;
-				tail_job->next = NULL;
-				events->tail_customer_support = tail_job;
+				events->tail_customer_support->next = abandon_job;
+				abandon_job->prev = events->tail_customer_support;
+				abandon_job->next = NULL;
+				events->tail_customer_support = abandon_job;
 			}
-			free(tail_job);
+			free(abandon_job);
 		}
 	}
 	else
@@ -168,7 +176,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 {
 	state->population -= 1;
 
-	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in user departure in customer support!\n");
@@ -196,7 +204,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 	else
 	{
-		tail_job->abandonTime = get_customer_support_departure(time->current);
+		tail_job->arrival_time = get_customer_support_departure(time->current);
 
 		if (events->head_user_to_security_check == NULL)
 		{
@@ -218,7 +226,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-	struct user *current = events->head_customer_support;
+	struct abandon_node *current = events->head_customer_support;
 	while (current != NULL)
 	{
 		if (current->id == job_id)
@@ -226,8 +234,8 @@ void abandon_customer_support(struct event_list *events, struct states *state, s
 		current = current->next;
 	}
 
-	struct user *prev = current->prev;
-	struct user *next = current->next;
+	struct abandon_node *prev = current->prev;
+	struct abandon_node *next = current->next;
 
 	if (prev != NULL)
 	{

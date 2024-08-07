@@ -33,7 +33,7 @@ double get_security_check_departure(double start)
 
 void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in user arrival in security check!\n");
@@ -115,7 +115,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	}
 
 	// Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al ticket gate
-	struct user *tail = (struct user *)malloc(sizeof(struct user));
+	struct queue_node *tail = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail)
 	{
 		printf("Error in malloc in user departure in security check!\n");
@@ -124,7 +124,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	if (!(Random() <= P_LEAVE_SECURITY_CONTROL))
 	{
 		tail->id = loss->index_user;
-		tail->abandonTime = get_security_check_departure(time->current);
+		tail->arrival_time = get_security_check_departure(time->current);
 
 		if (events->head_ticket_gate == NULL)
 		{

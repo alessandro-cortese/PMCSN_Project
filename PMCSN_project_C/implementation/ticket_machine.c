@@ -61,14 +61,14 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 
 	if (Random() <= P_LEAVE_TICKET_STATION)
 	{
-		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 		if (!tail_job)
 		{
 			printf("Error in malloc in user arrival in ticket machine!\n");
 			exit(-1);
 		}
 		tail_job->id = loss->index_user;
-		tail_job->abandonTime = time->current;
+		tail_job->abandon_time = time->current;
 		tail_job->next = NULL;
 		tail_job->prev = events->tail_ticket_machine;
 
@@ -102,14 +102,14 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 	}
 
 	// Add a node into ticket purchased queue
-	struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in ticket machine departure!\n");
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->abandonTime = get_ticket_machine_departure(time->current);
+	tail_job->arrival_time = get_ticket_machine_departure(time->current);
 
 	if (events->head_ticket_purchased == NULL)
 	{
@@ -132,7 +132,7 @@ void abandon_ticket_machine(struct event_list *events, struct states *state, str
 {
 	if (events->head_ticket_machine != NULL)
 	{
-		struct user *current = events->head_ticket_machine;
+		struct abandon_node *current = events->head_ticket_machine;
 		while (current != NULL)
 		{
 			if (current->id == job_id)
@@ -140,8 +140,8 @@ void abandon_ticket_machine(struct event_list *events, struct states *state, str
 			current = current->next;
 		}
 
-		struct user *prev = current->prev;
-		struct user *next = current->next;
+		struct abandon_node *prev = current->prev;
+		struct abandon_node *next = current->next;
 
 		if (prev != NULL)
 		{
