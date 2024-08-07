@@ -17,6 +17,9 @@
 // Number of servers of security check service node
 #define NUMBER_OF_SECURITY_CHECK_SERVERS 3
 
+// Number of servers of ticket gate service node
+#define NUMBER_OF_TICKET_GATE_SERVERS 10
+
 // Arrival rate of traveller to the station [req/sec]
 #define LAMBDA1 0.129  // [05 - 08]
 #define LAMBDA2 0.6309 // [08 - 19]

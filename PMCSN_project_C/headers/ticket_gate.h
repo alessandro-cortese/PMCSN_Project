@@ -5,9 +5,7 @@
 #include "./data_structures/loss.h"
 #include "./data_structures/utils.h"
 
-double get_user_arrival_to_ticket_gate(double arrival);
 double get_ticket_gate_departure(double start);
 double get_abandon_ticket_gate(double arrival);
-void user_arrivals_ticket_gate(void);
-void user_departure_ticket_gate(void);
-void abandon_ticket_gate(void);
+void user_arrivals_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
+void user_departure_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset);

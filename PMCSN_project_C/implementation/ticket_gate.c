@@ -17,13 +17,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-double get_user_arrival_to_ticket_gate(double arrival)
-{
-	// TODO: bisogna capire come riunire i flussi
-	//		e aggiungere la probabilità
-	return (arrival);
-}
-
 double get_ticket_gate_departure(double start)
 {
 	SelectStream(11);
@@ -31,18 +24,56 @@ double get_ticket_gate_departure(double start)
 	return departure;
 }
 
-double get_abandon_ticket_gate(double arrival)
-{
-	SelectStream(14);
-	double abandon = arrival + Exponential(P_LEAVE_TICKET_GATE);
-	return abandon;
-}
-
 void user_arrivals_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	//FINIAMO DOMANI..... SI SPERA BENE
+
+	int idle_offset = -1;
+	for (int i = 0; i < NUMBER_OF_TICKET_GATE_SERVERS; i++)
+	{
+		if (state->server_occupation[i] == 0)
+		{
+			idle_offset = i;
+			break;
+		}
+	}
+
+	if (idle_offset >= 0 && events->head_ticket_gate != NULL)
+	{
+		loss->index_user += 1;
+		state->population += 1;
+		// Set idle server to busy server and update departure time
+		state->server_occupation[idle_offset] = 1;
+		events->completionTimes_ticket_gate[idle_offset] = get_ticket_gate_departure(rate);
+
+		struct user *tail_job = (struct user *)malloc(sizeof(struct user));
+		if (!tail_job)
+		{
+			printf("Error in malloc in user arrival in ticket gate!\n");
+			exit(-1);
+		}
+
+		if (events->head_ticket_gate == events->tail_ticket_gate)
+		{
+			events->head_ticket_gate = NULL;
+			free(events->tail_ticket_gate);
+			events->tail_ticket_gate = NULL;
+			events->user_arrival_to_ticket_gate.user_arrival_time = (double)INFINITY;
+		}
+		else
+		{
+			tail_job = events->head_ticket_gate;
+			events->head_ticket_gate = tail_job->next;
+			tail_job->next = NULL;
+			tail_job->prev = NULL;
+			free(tail_job);
+			events->user_arrival_to_ticket_gate.user_arrival_time = time->current;
+		}
+	}
+	
 }
-void user_departure_ticket_gate(void)
+void user_departure_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
-	printf("user departure to ticket gate\n");
+	state->population -= 1;
+	events->completionTimes_security_check[server_offset] = (double)INFINITY;
+	state->server_occupation[server_offset] = 0;
 }

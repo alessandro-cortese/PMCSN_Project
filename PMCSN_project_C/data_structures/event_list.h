@@ -63,6 +63,7 @@ struct event_list
     // ticket_gate
     struct user_arrival user_arrival_to_ticket_gate;
     double *completionTimes_ticket_gate;
+    // arrival to ticket gate
     struct user *head_ticket_gate;
     struct user *tail_ticket_gate;
 };
