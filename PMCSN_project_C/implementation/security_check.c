@@ -5,7 +5,7 @@
 #include "../headers/security_check.h"
 #include "../data_structures/event_list.h"
 
-int user[NUMBER_OF_SECURITY_CHECK_SERVERS];
+int processed_job_security_check[NUMBER_OF_SECURITY_CHECK_SERVERS];
 int busy_server = 0;
 
 // TODO: we have to understad why exist...
@@ -68,7 +68,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 			// Set idle server to busy server and update departure time
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
-			user[idle_offset] = events->head_user_to_security_check->id;
+			processed_job_security_check[idle_offset] = events->head_user_to_security_check->id;
 			events->head_user_to_security_check = events->head_user_to_security_check->next;
 			busy_server++;
 		}
@@ -139,7 +139,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 			events->head_ticket_gate->next = tail;
 			tail->prev = events->tail_ticket_gate;
 			tail->next = NULL;
-			events->tail_customer_support = tail;
+			events->tail_customer_support = (struct abandon_node *)tail;
 		}
 		free(tail);
 	}

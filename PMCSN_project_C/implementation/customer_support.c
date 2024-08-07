@@ -6,8 +6,7 @@
 #include "../headers/ticket_office.h"
 #include "../data_structures/event_list.h"
 
-//
-int user[NUMBER_OF_CUSTOMER_SUPPORT_SERVER];
+int processed_job_customer_support[NUMBER_OF_CUSTOMER_SUPPORT_SERVER];
 
 // we don't need to model the stream cause it's the previous one
 //  double get_user_arrival_to_customer_support(double arrival)
@@ -72,7 +71,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			// CASE 0: change head ticket purchased and store job id into array
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
-			user[idle_offset] = events->head_ticket_purchased->id;
+			processed_job_customer_support[idle_offset] = events->head_ticket_purchased->id;
 			events->head_ticket_purchased = events->head_ticket_purchased->next;
 		}
 		else if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
@@ -80,7 +79,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			// delete from customer support queue
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
-			user[idle_offset] = events->head_queue_customer_support->id;
+			processed_job_customer_support[idle_offset] = events->head_queue_customer_support->id;
 			events->head_queue_customer_support = events->head_queue_customer_support->next;
 			tail_job->id = loss->index_user;
 			events->tail_queue_customer_support->next = tail_job;
@@ -125,7 +124,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			}
 
 			// CASE 2: delete a node from head_ticket_purchased and add to abandon customer support queue
-			abandon_job = events->head_ticket_purchased;
+			abandon_job = (struct abandon_node *)events->head_ticket_purchased;
 			events->head_ticket_purchased = tail_job->next;
 
 			abandon_job->id = loss->index_user;
@@ -190,7 +189,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	{
 		events->completionTimes_customer_support[server_offset] = get_customer_support_departure(time->current);
 		state->server_occupation[server_offset] = 0;
-		tail_job->id = user[server_offset];
+		tail_job->id = processed_job_customer_support[server_offset];
 	}
 	else
 	{

@@ -132,14 +132,10 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     double min_abandon_ticket_machine = (double)INFINITY;
     double min_abandon_ticket_office = (double)INFINITY;
     double min_abandon_customer_support = (double)INFINITY;
-    double min_abandon_security_check = (double)INFINITY;
-    double min_abandon_ticket_gate = (double)INFINITY;
 
     struct next_abandon *abandon_ticket_machine = NULL;
     struct next_abandon *abandon_ticket_office = NULL;
     struct next_abandon *abandon_customer_support = NULL;
-    struct next_abandon *abandon_security_check = NULL;
-    struct next_abandon *abandon_ticket_gate = NULL;
 
     if (events.head_ticket_machine != NULL)
     {
@@ -160,18 +156,6 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
         min_abandon_ticket_office = abandon_customer_support->abandonTime;
     }
 
-    if (events.head_security_check != NULL)
-    {
-        abandon_security_check = get_min_abandon(events.head_security_check);
-        min_abandon_ticket_office = abandon_security_check->abandonTime;
-    }
-
-    if (events.head_ticket_gate != NULL)
-    {
-        abandon_ticket_gate = get_min_abandon(events.head_ticket_gate);
-        min_abandon_ticket_office = abandon_ticket_gate->abandonTime;
-    }
-
     struct next_job *next_queue_time_ticket_machine = get_min_queue_time(events, n[0], state[0].server_occupation, 1);
     struct next_job *next_queue_time_ticket_office = get_min_queue_time(events, n[1], state[1].server_occupation, 2);
     struct next_job *next_queue_time_customer_support = get_min_queue_time(events, n[2], state[2].server_occupation, 3);
@@ -189,24 +173,20 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     times[0] = min_abandon_ticket_machine;
     times[1] = min_abandon_ticket_office;
     times[2] = min_abandon_customer_support;
-    times[3] = min_abandon_security_check;
-    times[4] = min_abandon_ticket_gate;
-    times[5] = min_service_ticket_machine;
-    times[6] = min_service_ticket_office;
-    times[7] = min_service_customer_support;
-    times[8] = min_service_security_check;
-    times[9] = min_service_ticket_gate;
-    times[10] = events.user_arrival_to_ticket_machine.user_arrival_time;
-    times[11] = events.user_arrival_to_ticket_office.user_arrival_time;
-    times[12] = events.user_arrival_to_customer_support.user_arrival_time;
-    times[13] = events.user_arrival_to_security_check.user_arrival_time;
-    times[14] = events.user_arrival_to_ticket_gate.user_arrival_time;
+    times[3] = min_service_ticket_machine;
+    times[4] = min_service_ticket_office;
+    times[5] = min_service_customer_support;
+    times[6] = min_service_security_check;
+    times[7] = min_service_ticket_gate;
+    times[8] = events.user_arrival_to_ticket_machine.user_arrival_time;
+    times[9] = events.user_arrival_to_ticket_office.user_arrival_time;
+    times[10] = events.user_arrival_to_customer_support.user_arrival_time;
+    times[11] = events.user_arrival_to_security_check.user_arrival_time;
+    times[12] = events.user_arrival_to_ticket_gate.user_arrival_time;
 
     free(abandon_ticket_machine);
     free(abandon_ticket_office);
     free(abandon_customer_support);
-    free(abandon_security_check);
-    free(abandon_ticket_gate);
 
     free(next_queue_time_ticket_machine);
     free(next_queue_time_ticket_office);

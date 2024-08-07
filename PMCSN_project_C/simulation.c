@@ -235,7 +235,7 @@ int main(int argc, char **argv)
 	while (/*events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
 		   events.user_arrival_to_customer_support.is_user_arrival_active || events.user_arrival_to_security_check.is_user_arrival_active ||
 		   events.user_arrival_to_ticket_gate.is_user_arrival_active || !is_system_empty(state, n)*/
-		   i < 10)
+		   i < 100)
 	{
 
 		t->next = get_minimum_time(events, state, n);
@@ -246,8 +246,6 @@ int main(int argc, char **argv)
 		struct next_abandon *next_ticket_machine_abandon = get_min_abandon(events.head_ticket_machine);
 		struct next_abandon *next_ticket_office_abandon = get_min_abandon(events.head_ticket_office);
 		struct next_abandon *next_customer_support_abandon = get_min_abandon(events.head_customer_support);
-		struct next_abandon *next_security_check_abandon = get_min_abandon(events.head_security_check);
-		struct next_abandon *next_ticket_gate_abandon = get_min_abandon(events.head_ticket_gate);
 
 		struct next_job *next_job_ticket_machine = get_min_queue_time(events, n[0], state[0].server_occupation, 1);
 		struct next_job *next_job_ticket_office = get_min_queue_time(events, n[1], state[1].server_occupation, 2);
@@ -265,62 +263,73 @@ int main(int argc, char **argv)
 
 		if (t->current == events.user_who_has_purchased_ticket.user_arrival_time)
 		{
+			printf("Evento append_user_arrival_ticket_purchased\n");
 			append_user_arrival_ticket_purchased();
 		}
 		else if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
 		{
-			user_arrivals_ticket_machine(&events, &t, &state[0], &loss[0], rate);
+			printf("Evento user_arrivals_ticket_machine\n");
+			user_arrivals_ticket_machine(&events, t, &state[0], &loss[0], rate);
 		}
 		else if (t->current == min_job_completion_ticket_machine)
 		{
-			user_departure_ticket_machine(&events, &t, &state[0], &loss[0], next_job_ticket_machine->serverOffset);
+			printf("Evento user_departure_ticket_machine\n");
+			user_departure_ticket_machine(&events, t, &state[0], &loss[0], next_job_ticket_machine->serverOffset);
 		}
 		else if (t->current == next_ticket_machine_abandon->abandonTime)
 		{
+			printf("Evento abandon_ticket_machine\n");
 			abandon_ticket_machine(&events, &state[0], &loss[0], next_ticket_machine_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_ticket_office.user_arrival_time)
 		{
-			user_arrivals_ticket_office(&events, &t, &state[1], &loss[1], rate);
+			printf("Evento user_arrivals_ticket_office\n");
+			user_arrivals_ticket_office(&events, t, &state[1], &loss[1], rate);
 		}
 		else if (t->current == min_job_completion_ticket_office)
 		{
-			user_departure_ticket_office(&events, &t, &state[1], &loss[1], next_job_ticket_office->serverOffset);
+			printf("Evento user_departure_ticket_office");
+			user_departure_ticket_office(&events, t, &state[1], &loss[1], next_job_ticket_office->serverOffset);
 		}
 		else if (t->current == next_ticket_office_abandon->abandonTime)
 		{
+			printf("Evento abandon_ticket_office");
 			abandon_ticket_office(&events, &state[1], &loss[1], next_ticket_office_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_customer_support.is_user_arrival_active)
 		{
-			user_arrivals_customer_support(&events, &t, &state[2], &loss[2], rate);
+			printf("Evento user_arrivals_customer_support\n");
+			user_arrivals_customer_support(&events, t, &state[2], &loss[2], rate);
 		}
 		else if (t->current == min_job_completion_customer_support)
 		{
-			user_departure_customer_support(&events, &t, &state[2], &loss[2], next_job_security_check->serverOffset, rate);
+			printf("Evento : user_departure_customer_support\n");
+			user_departure_customer_support(&events, t, &state[2], &loss[2], next_job_security_check->serverOffset, rate);
 		}
 		else if (t->current == next_customer_support_abandon->abandonTime)
 		{
+			printf("Evento : abandon_customer_support\n");
 			abandon_customer_support(&events, &state[2], &loss[2], next_customer_support_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_security_check.user_arrival_time)
 		{
-			user_arrivals_security_check(&events, &t, &state[3], &loss[3], rate);
+			printf("Evento : user_arrivals_security_check\n");
+			user_arrivals_security_check(&events, t, &state[3], &loss[3], rate);
 		}
 		else if (t->current == events.user_arrival_to_ticket_gate.user_arrival_time)
 		{
-			user_arrivals_ticket_gate(&events, &t, &state[4], &loss[4], rate);
+			printf("Evento: user_arrivals_ticket_gate\n");
+			user_arrivals_ticket_gate(&events, t, &state[4], &loss[4], rate);
 		}
 		else if (t->current == min_job_completion_ticket_gate)
 		{
-			user_departure_ticket_gate(&events, &t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
+			printf("Evento : user_departure_ticket_gate\n");
+			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
 
 		free(next_ticket_machine_abandon);
 		free(next_ticket_office_abandon);
 		free(next_customer_support_abandon);
-		free(next_security_check_abandon);
-		free(next_ticket_gate_abandon);
 
 		free(next_job_ticket_machine);
 		free(next_job_ticket_office);
@@ -328,11 +337,6 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		printf("DOPO\n");
-		printf("t->next: %f\n", t->next);
-		printf("t->current:%f\n", t->current);
-
-		exit(-1);
 		i++;
 	}
 

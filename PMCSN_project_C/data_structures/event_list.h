@@ -7,16 +7,16 @@ struct queue_node
 {
     int id;
     double arrival_time;
-    struct user *prev;
-    struct user *next;
+    struct queue_node *prev;
+    struct queue_node *next;
 };
 
 struct abandon_node
 {
     int id;
     double abandon_time;
-    struct user *prev;
-    struct user *next;
+    struct abandon_node *prev;
+    struct abandon_node *next;
 };
 
 struct user_arrival
@@ -40,8 +40,8 @@ struct event_list
     struct user_arrival user_arrival_to_ticket_office;
     double *completionTimes_ticket_office;
     // abandon queue ticket office
-    struct abandon_queue *head_ticket_office;
-    struct abandon_queue *tail_ticket_office;
+    struct abandon_node *head_ticket_office;
+    struct abandon_node *tail_ticket_office;
 
     // list of job ticket machine + ticket office
     struct queue_node *head_ticket_purchased;
