@@ -23,17 +23,26 @@ struct area areas[5];
 struct time *t;
 struct loss loss[5];
 
+double get_user_arrival_to_ticket_purchased(double arrival, double rate)
+{
+	SelectStream(15);
+	arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
+	return (arrival);
+}
+
 double rate;
 
 void initializeEventList(int *n)
 {
-	// Init ticket machine
-	events.user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(START, rate);
-	printf("%f\n", events.user_arrival_to_ticket_machine.user_arrival_time);
+	events.user_who_has_purchased_ticket.user_arrival_time = /*get_user_arrival_to_ticket_purchased(START, rate)*/ (double)INFINITY;
+	// printf("%f\n", events.user_who_has_purchased_ticket.user_arrival_time);
+	//  Init ticket machine
+	events.user_arrival_to_ticket_machine.user_arrival_time = /*get_user_arrival_to_ticket_machine(START, rate)*/ (double)INFINITY;
+	// printf("%f\n", events.user_arrival_to_ticket_machine.user_arrival_time);
 	events.user_arrival_to_ticket_machine.is_user_arrival_active = true;
 	// Init ticket office
-	events.user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(START, rate);
-	printf("%f\n", events.user_arrival_to_ticket_office.user_arrival_time);
+	events.user_arrival_to_ticket_office.user_arrival_time = /*get_user_arrival_to_ticket_office(START, rate)*/ (double)INFINITY;
+	// printf("%f\n", events.user_arrival_to_ticket_office.user_arrival_time);
 	events.user_arrival_to_ticket_office.is_user_arrival_active = true;
 	// Init customer support
 	events.user_arrival_to_customer_support.user_arrival_time = (double)INFINITY;
@@ -151,17 +160,20 @@ void calcultate_area_struct(int *n)
 
 void append_user_arrival_ticket_purchased()
 {
-	SelectStream(1);
-	double arrival;
-	arrival += Exponential(rate * P_OF_TICKET_PURCHASED_ONLINE);
-	events.user_who_has_purchased_ticket.is_user_arrival_active = arrival;
-
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in append user arrival ticket purchased!\n");
 		exit(-1);
 	}
+	// events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
+	printf("Dentro user arrival ticket purchased %f\n", events.user_who_has_purchased_ticket.user_arrival_time);
+	if (events.user_who_has_purchased_ticket.user_arrival_time > STOP)
+	{
+		events.user_who_has_purchased_ticket.is_user_arrival_active = false;
+		printf("events.user_who_has_purchased_ticket.is_user_arrival_active = %d\n", events.user_who_has_purchased_ticket.is_user_arrival_active);
+	}
+
 	tail_job->id = loss->index_user;
 	tail_job->arrival_time = t->current;
 
@@ -230,17 +242,34 @@ int main(int argc, char **argv)
 	PlantSeeds(SEED);
 	initializeEventList(n);
 
-	int i = 0;
-
-	while (/*events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
-		   events.user_arrival_to_customer_support.is_user_arrival_active || events.user_arrival_to_security_check.is_user_arrival_active ||
-		   events.user_arrival_to_ticket_gate.is_user_arrival_active || !is_system_empty(state, n)*/
-		   i < 100)
+	while (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
+		   events.user_who_has_purchased_ticket.is_user_arrival_active || !is_system_empty(state, n))
 	{
 
+		if (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
+			events.user_who_has_purchased_ticket.is_user_arrival_active)
+		{
+			double rand = Random();
+			if (rand <= P_TICKET_NOT_PURCHASED)
+			{
+				if (rand <= (P_TICKET_NOT_PURCHASED * P_LEAVE_TICKET_OFFICE))
+				{
+					events.user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(t->current, rate);
+				}
+				else
+				{
+					events.user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(t->current, rate);
+				}
+			}
+			else
+			{
+				events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
+			}
+		}
+
 		t->next = get_minimum_time(events, state, n);
-		// printf("t->next: %f\n", t->next);
-		// printf("t->current:%f\n", t->current);
+		printf("t->next: %f\n", t->next);
+		printf("t->current:%f\n", t->current);
 		calcultate_area_struct(n);
 
 		struct next_abandon *next_ticket_machine_abandon = get_min_abandon(events.head_ticket_machine);
@@ -337,7 +366,7 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		i++;
+		sleep(3);
 	}
 
 	return 0;

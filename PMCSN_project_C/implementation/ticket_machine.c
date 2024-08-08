@@ -9,7 +9,7 @@
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
 	SelectStream(2);
-	arrival += Exponential(rate * (P_TICKET_PURCHASED_FROM_TICKET_STATION * P_TICKET_NOT_PURCHASED));
+	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION * P_TICKET_NOT_PURCHASED));
 	return (arrival);
 }
 
@@ -34,7 +34,8 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	state->population += 1;
 
 	// generate next event
-	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
+	// events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
+	printf("Dentro user arrival, time->current: %f\n", events->user_arrival_to_ticket_machine.user_arrival_time);
 
 	time->last[0] = time->current;
 
@@ -42,6 +43,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	{
 		events->user_arrival_to_ticket_machine.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;
+		printf("events->user_arrival_to_ticket_machine.is_user_arrival_active = %d\n", events->user_arrival_to_ticket_machine.is_user_arrival_active);
 	}
 
 	// Search idle server

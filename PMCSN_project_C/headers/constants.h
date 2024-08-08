@@ -1,9 +1,9 @@
 #define START 0.0
-#define STOP 10000.0
+#define STOP 2.0
 #define SEED 123456789
 
 // Dimension of array of time
-#define DIM 13
+#define DIM 14
 
 // Number of servers of ticket machine service node
 #define NUMBER_OF_TICKET_MACHINE_SERVER 10

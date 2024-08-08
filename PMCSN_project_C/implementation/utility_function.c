@@ -129,6 +129,13 @@ double get_smallest(double *values, int len)
 
 double get_minimum_time(struct event_list events, struct states *state, int *n)
 {
+    double times[DIM];
+
+    for (int i = 0; i < DIM; i++)
+    {
+        times[i] = 0.0;
+    }
+
     double min_abandon_ticket_machine = (double)INFINITY;
     double min_abandon_ticket_office = (double)INFINITY;
     double min_abandon_customer_support = (double)INFINITY;
@@ -168,8 +175,6 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     double min_service_security_check = next_queue_time_security_check->completionTime;
     double min_service_ticket_gate = next_queue_time_ticket_gate->completionTime;
 
-    double times[DIM];
-
     times[0] = min_abandon_ticket_machine;
     times[1] = min_abandon_ticket_office;
     times[2] = min_abandon_customer_support;
@@ -178,11 +183,17 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     times[5] = min_service_customer_support;
     times[6] = min_service_security_check;
     times[7] = min_service_ticket_gate;
-    times[8] = events.user_arrival_to_ticket_machine.user_arrival_time;
-    times[9] = events.user_arrival_to_ticket_office.user_arrival_time;
-    times[10] = events.user_arrival_to_customer_support.user_arrival_time;
-    times[11] = events.user_arrival_to_security_check.user_arrival_time;
-    times[12] = events.user_arrival_to_ticket_gate.user_arrival_time;
+    times[8] = events.user_who_has_purchased_ticket.user_arrival_time;
+    times[9] = events.user_arrival_to_ticket_machine.user_arrival_time;
+    times[10] = events.user_arrival_to_ticket_office.user_arrival_time;
+    times[11] = events.user_arrival_to_customer_support.user_arrival_time;
+    times[12] = events.user_arrival_to_security_check.user_arrival_time;
+    times[13] = events.user_arrival_to_ticket_gate.user_arrival_time;
+
+    for (int i = 0; i < DIM; i++)
+    {
+        printf("times[%d] = %f\n", i, times[i]);
+    }
 
     free(abandon_ticket_machine);
     free(abandon_ticket_office);

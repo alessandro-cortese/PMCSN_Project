@@ -8,7 +8,7 @@
 double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
 	SelectStream(3);
-	arrival += Exponential(rate * (P_TICKET_PURCHASED_FROM_TICKET_OFFICE * P_TICKET_NOT_PURCHASED));
+	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE * P_TICKET_NOT_PURCHASED));
 	return (arrival);
 }
 
@@ -31,7 +31,8 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 {
 	loss->index_user += 1;
 	state->population += 1;
-	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
+	// events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
+	printf("Dentro user arrivla ticket office: %f\n", events->user_arrival_to_ticket_office.user_arrival_time);
 
 	time->last[1] = time->current;
 
@@ -39,6 +40,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	{
 		events->user_arrival_to_ticket_office.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;
+		printf("events->user_arrival_to_ticket_office.is_user_arrival_active = %d\n", events->user_arrival_to_ticket_office.is_user_arrival_active);
 	}
 
 	// Search idle server
