@@ -4,58 +4,23 @@
 #include <stdbool.h>
 #include "../headers/ticket_office.h"
 #include "../data_structures/event_list.h"
+#include "../headers/utility_functions.h"
 
 double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
-	printf("arrival current is : %f\n", arrival);
-	/*
-	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE))
-	{
-		printf("Rand pick ticket office stream\n");
-		SelectStream(3);
-		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
-		printf("arrival final is : %f\n", arrival);
-		return (arrival);
-	}
-	else
-	{
-		if (arrival != 0.0)
-			return arrival;
-	}
-	*/
-	
 	SelectStream(3);
-	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
+	arrival += Exponential(rate / (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
 	printf("arrival final is : %f\n", arrival);
 	return (arrival);
-	
-}
-double get_first_arrival_to_ticket_office(double arrival, double rate)
-{
-	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE))
-	{
-		printf("Rand pick ticket office stream\n");
-		SelectStream(3);
-		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
-		printf("arrival final is : %f\n", arrival);
-		return (arrival);
-	}
 }
 
 double get_ticket_office_departure(double start)
 {
 	SelectStream(5);
 	double departure = start + Exponential(SR_TICKET_OFFICE_OPERATOR);
+	printf("Dearture ticket office: %f\n", departure);
 	return departure;
 }
-
-// TODO: understand why exist
-// double get_abandon_ticket_office(double arrival)
-//{
-//	SelectStream(10);
-//	double abandon = arrival + Exponential(P_LEAVE_TICKET_OFFICE);
-//	return abandon;
-// }
 
 void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
@@ -79,10 +44,12 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	{
 		if (state->server_occupation[i] == 0)
 		{
-			idle_offset == i;
+			idle_offset = i;
 			break;
 		}
 	}
+
+	printf("idle offset: %d\n", idle_offset);
 
 	if (idle_offset >= 0)
 	{
@@ -113,7 +80,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	}
 }
 
-void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
+void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
 	state->population -= 1;
 
@@ -154,6 +121,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		events->tail_ticket_purchased = tail_job;
 	}
 	free(tail_job);
+	routing_ticket_purchased(events, time, state, loss, rate);
 }
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)

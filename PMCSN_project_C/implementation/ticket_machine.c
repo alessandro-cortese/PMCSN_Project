@@ -5,49 +5,22 @@
 #include "../headers/ticket_machine.h"
 #include "../headers/rngs.h"
 #include "../data_structures/event_list.h"
+#include "../headers/utility_functions.h"
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
-	/*
-	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_STATION))
-	{
-		printf("Rand pick ticket machine stream\n");
-		SelectStream(2);
-		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION));
-		return (arrival);
-	}else{
-		if(arrival != 0.0)
-			return arrival;
-	}
-	*/
 	SelectStream(2);
-	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION));
+	arrival += Exponential(rate / (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_STATION));
 	return (arrival);
-	
 }
-double get_first_arrival_to_ticket_machine(double arrival, double rate){
-	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_STATION))
-	{
-		printf("Rand pick ticket machine stream\n");
-		SelectStream(2);
-		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION));
-		return (arrival);
-	}
-}
+
 double get_ticket_machine_departure(double start)
 {
 	SelectStream(4);
 	double departure = start + Exponential(SR_TICKET_STATION);
+	printf("Depature for ticket machine is %f\n", departure);
 	return departure;
 }
-
-// To undestand why exists...
-//  double get_abandon_ticket_machine(double arrival)
-//  {
-//  	SelectStream(9);
-//  	double abandon = arrival + Exponential(P_LEAVE_TICKET_STATION);
-//  	return abandon;
-//  }
 
 void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
@@ -73,11 +46,11 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	{
 		if (state->server_occupation[i] == 0)
 		{
-			idle_offset == i;
+			idle_offset = i;
 			break;
 		}
 	}
-
+	printf("idle offset for ticket machine is %d\n", idle_offset);
 	if (idle_offset >= 0)
 	{
 		// Set idle server to busy server and update departure time
@@ -110,7 +83,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	}
 }
 
-void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
+void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
 	state->population -= 1;
 
@@ -137,7 +110,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->arrival_time = time->current;
+	tail_job->arrival_time = get_ticket_machine_departure(time->current);
 
 	if (events->head_ticket_purchased == NULL)
 	{
@@ -154,6 +127,8 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		events->tail_ticket_purchased = tail_job;
 	}
 	free(tail_job);
+
+	routing_ticket_purchased(events, time, state, loss, rate);
 }
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)

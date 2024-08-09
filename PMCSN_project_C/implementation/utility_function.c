@@ -219,3 +219,43 @@ int get_total_busy_servers(int num_servers, int *server_list)
 
     return count;
 }
+
+void routing_ticket_purchased(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+{
+    if (Random() <= /*P_OF_CUSTOMER_SUPPORT*/ 1.0)
+    {
+        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+        if (!job)
+        {
+            printf("Error in malloc in routing_ticket_purchased to customer support!\n");
+            exit(-1);
+        }
+
+        job = events->head_ticket_purchased;
+        events->head_ticket_purchased = job->next;
+        job->prev = NULL;
+
+        if (events->head_queue_customer_support == NULL)
+        {
+            events->head_queue_customer_support = job;
+            events->tail_queue_customer_support = job;
+            job->next = NULL;
+            job->prev = NULL;
+        }
+        else
+        {
+            events->tail_queue_customer_support->next = job;
+            job->prev = events->tail_queue_customer_support;
+            job->next = NULL;
+            events->tail_queue_customer_support = job;
+        }
+
+        job = NULL;
+        user_arrivals_customer_support(events, time, state, loss, rate);
+        printf("Dopo la chiamata a user arrival a customer support!\n");
+    }
+    else
+    {
+        printf("Qui deve andare nell'altra funzione simile a questa ma con security check!\n");
+    }
+}
