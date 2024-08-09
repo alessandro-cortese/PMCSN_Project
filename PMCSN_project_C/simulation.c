@@ -25,24 +25,49 @@ struct loss loss[5];
 
 double get_user_arrival_to_ticket_purchased(double arrival, double rate)
 {
+	/*
+	if (Random() <= P_OF_TICKET_PURCHASED_ONLINE)
+	{
+		printf("rand pick purchased online\n");
+		SelectStream(15);
+		arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
+		return (arrival);
+	}
+	else
+	{
+		if(arrival != 0.0)
+			return arrival;
+	}
+	*/
 	SelectStream(15);
 	arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
 	return (arrival);
+}
+double get_first_ticket_purchased(double arrival, double rate)
+{
+
+	if (Random() <= P_OF_TICKET_PURCHASED_ONLINE)
+	{
+		printf("rand pick purchased online\n");
+		SelectStream(15);
+		arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
+		return (arrival);
+	}
 }
 
 double rate;
 
 void initializeEventList(int *n)
 {
-	events.user_who_has_purchased_ticket.user_arrival_time = /*get_user_arrival_to_ticket_purchased(START, rate)*/ (double)INFINITY;
-	// printf("%f\n", events.user_who_has_purchased_ticket.user_arrival_time);
+	events.user_who_has_purchased_ticket.user_arrival_time = get_first_ticket_purchased(START, rate);
+	printf("purchased online time arrival %f\n", events.user_who_has_purchased_ticket.user_arrival_time);
 	//  Init ticket machine
-	events.user_arrival_to_ticket_machine.user_arrival_time = /*get_user_arrival_to_ticket_machine(START, rate)*/ (double)INFINITY;
-	// printf("%f\n", events.user_arrival_to_ticket_machine.user_arrival_time);
+	events.user_arrival_to_ticket_machine.user_arrival_time = get_first_arrival_to_ticket_machine(START, rate);
+	printf("ticket machine time arrival %f\n", events.user_arrival_to_ticket_machine.user_arrival_time);
 	events.user_arrival_to_ticket_machine.is_user_arrival_active = true;
 	// Init ticket office
-	events.user_arrival_to_ticket_office.user_arrival_time = /*get_user_arrival_to_ticket_office(START, rate)*/ (double)INFINITY;
-	// printf("%f\n", events.user_arrival_to_ticket_office.user_arrival_time);
+	events.user_arrival_to_ticket_office.user_arrival_time = get_first_arrival_to_ticket_office(START, rate);
+	printf("ticket office time arrival %f\n", events.user_arrival_to_ticket_office.user_arrival_time);
 	events.user_arrival_to_ticket_office.is_user_arrival_active = true;
 	// Init customer support
 	events.user_arrival_to_customer_support.user_arrival_time = (double)INFINITY;
@@ -166,7 +191,7 @@ void append_user_arrival_ticket_purchased()
 		printf("Error in malloc in append user arrival ticket purchased!\n");
 		exit(-1);
 	}
-	// events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
+	events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
 	printf("Dentro user arrival ticket purchased %f\n", events.user_who_has_purchased_ticket.user_arrival_time);
 	if (events.user_who_has_purchased_ticket.user_arrival_time > STOP)
 	{
@@ -245,27 +270,34 @@ int main(int argc, char **argv)
 	while (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
 		   events.user_who_has_purchased_ticket.is_user_arrival_active || !is_system_empty(state, n))
 	{
-
+		/*
 		if (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
 			events.user_who_has_purchased_ticket.is_user_arrival_active)
 		{
 			double rand = Random();
+
 			if (rand <= P_TICKET_NOT_PURCHASED)
 			{
-				if (rand <= (P_TICKET_NOT_PURCHASED * P_LEAVE_TICKET_OFFICE))
+				if (rand <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE))
 				{
+					printf("Rand pick ticket office stream\n");
 					events.user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(t->current, rate);
+					// user_arrivals_ticket_office(&events, t, &state[1], &loss[1], rate);
 				}
 				else
 				{
+					printf("Rand pick ticket machine stream\n");
 					events.user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(t->current, rate);
+					// user_arrivals_ticket_machine(&events, t, &state[0], &loss[0], rate);
 				}
 			}
 			else
 			{
+				printf("Rand pick purchased stream\n");
 				events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
 			}
 		}
+		*/
 
 		t->next = get_minimum_time(events, state, n);
 		printf("t->next: %f\n", t->next);

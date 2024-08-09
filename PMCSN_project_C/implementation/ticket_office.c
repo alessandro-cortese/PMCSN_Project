@@ -7,9 +7,39 @@
 
 double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
+	printf("arrival current is : %f\n", arrival);
+	/*
+	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE))
+	{
+		printf("Rand pick ticket office stream\n");
+		SelectStream(3);
+		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
+		printf("arrival final is : %f\n", arrival);
+		return (arrival);
+	}
+	else
+	{
+		if (arrival != 0.0)
+			return arrival;
+	}
+	*/
+	
 	SelectStream(3);
-	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE * P_TICKET_NOT_PURCHASED));
+	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
+	printf("arrival final is : %f\n", arrival);
 	return (arrival);
+	
+}
+double get_first_arrival_to_ticket_office(double arrival, double rate)
+{
+	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE))
+	{
+		printf("Rand pick ticket office stream\n");
+		SelectStream(3);
+		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
+		printf("arrival final is : %f\n", arrival);
+		return (arrival);
+	}
 }
 
 double get_ticket_office_departure(double start)
@@ -31,8 +61,8 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 {
 	loss->index_user += 1;
 	state->population += 1;
-	// events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
-	printf("Dentro user arrivla ticket office: %f\n", events->user_arrival_to_ticket_office.user_arrival_time);
+	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
+	printf("Dentro user arrival ticket office: %f\n", events->user_arrival_to_ticket_office.user_arrival_time);
 
 	time->last[1] = time->current;
 

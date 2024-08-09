@@ -8,11 +8,32 @@
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
+	/*
+	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_STATION))
+	{
+		printf("Rand pick ticket machine stream\n");
+		SelectStream(2);
+		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION));
+		return (arrival);
+	}else{
+		if(arrival != 0.0)
+			return arrival;
+	}
+	*/
 	SelectStream(2);
-	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION * P_TICKET_NOT_PURCHASED));
+	arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION));
 	return (arrival);
+	
 }
-
+double get_first_arrival_to_ticket_machine(double arrival, double rate){
+	if (Random() <= (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_STATION))
+	{
+		printf("Rand pick ticket machine stream\n");
+		SelectStream(2);
+		arrival += Exponential(rate / (P_TICKET_PURCHASED_FROM_TICKET_STATION));
+		return (arrival);
+	}
+}
 double get_ticket_machine_departure(double start)
 {
 	SelectStream(4);
@@ -34,8 +55,8 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	state->population += 1;
 
 	// generate next event
-	// events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
-	printf("Dentro user arrival, time->current: %f\n", events->user_arrival_to_ticket_machine.user_arrival_time);
+	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
+	printf("Dentro user arrival ticket machine: %f\n", events->user_arrival_to_ticket_machine.user_arrival_time);
 
 	time->last[0] = time->current;
 
