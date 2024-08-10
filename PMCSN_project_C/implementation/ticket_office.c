@@ -27,7 +27,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	loss->index_user += 1;
 	state->population += 1;
 	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
-	printf("Dentro user arrival ticket office: %f\n", events->user_arrival_to_ticket_office.user_arrival_time);
+	printf("\nDentro user arrival ticket office: %f\n", events->user_arrival_to_ticket_office.user_arrival_time);
 
 	time->last[1] = time->current;
 
@@ -35,7 +35,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	{
 		events->user_arrival_to_ticket_office.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;
-		printf("events->user_arrival_to_ticket_office.is_user_arrival_active = %d\n", events->user_arrival_to_ticket_office.is_user_arrival_active);
+		printf("Stop arrival to ticket office!\n");
 	}
 
 	// Search idle server
@@ -120,7 +120,8 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		tail_job->next = NULL;
 		events->tail_ticket_purchased = tail_job;
 	}
-	free(tail_job);
+	tail_job = NULL;
+	printf("PRIMAAAAA\n");
 	routing_ticket_purchased(events, time, state, loss, rate);
 }
 

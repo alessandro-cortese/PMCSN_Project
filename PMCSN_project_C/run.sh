@@ -7,7 +7,7 @@ gcc -c ./implementation/rngs.c
 gcc -c ./implementation/utility_function.c
 gcc -c simulation.c
 gcc simulation.o ticket_machine.o ticket_office.o customer_support.o security_check.o ticket_gate.o rngs.o utility_function.o -o simulation -lm
-./simulation 2.0 3.0 4.0 5.0 6.0 1
+./simulation 2 3 4 5 6 1
 rm simulation
 rm simulation.o
 rm ticket_machine.o

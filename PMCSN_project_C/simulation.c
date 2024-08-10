@@ -182,12 +182,11 @@ void append_user_arrival_ticket_purchased()
 		exit(-1);
 	}
 	events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
-	printf("Dentro user arrival ticket purchased %f\n", events.user_who_has_purchased_ticket.user_arrival_time);
 	if (events.user_who_has_purchased_ticket.user_arrival_time > STOP)
 	{
 		events.user_who_has_purchased_ticket.user_arrival_time = (double)INFINITY;
 		events.user_who_has_purchased_ticket.is_user_arrival_active = false;
-		printf("events.user_who_has_purchased_ticket.is_user_arrival_active = %d\n", events.user_who_has_purchased_ticket.is_user_arrival_active);
+		printf("Stop arrival to ticket purchased!\n");
 	}
 
 	tail_job->id = loss->index_user;
@@ -207,14 +206,6 @@ void append_user_arrival_ticket_purchased()
 		tail_job->prev = events.tail_ticket_purchased;
 		tail_job->next = NULL;
 		events.tail_ticket_purchased = tail_job;
-	}
-	if (events.tail_ticket_purchased == NULL)
-	{
-		printf("La tail è null\n");
-	}
-	else
-	{
-		printf("La tail non è null\n");
 	}
 
 	tail_job = NULL;
@@ -372,7 +363,12 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		sleep(3);
+		sleep(2);
+
+		puts("");
+		puts("");
+		puts("");
+		puts("");
 	}
 
 	return 0;

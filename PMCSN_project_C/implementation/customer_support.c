@@ -19,7 +19,9 @@ int processed_job_customer_support[NUMBER_OF_CUSTOMER_SUPPORT_SERVER];
 double get_customer_support_departure(double start)
 {
 	SelectStream(7);
+	printf("Insider get customer support departure, start = %f\n", start);
 	double departure = start + Exponential(SR_CUSTOMER_SUPPORT_OPERATOR);
+	printf("Insider get customer support departure, departure = %f\n", departure);
 	return departure;
 }
 
@@ -47,9 +49,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 	// events->user_arrival_to_customer_support.user_arrival_time = events->head_queue_customer_support->arrival_time;
 
-	printf("Prima\n");
 	time->last[2] = time->current;
-	printf("Dopo\n");
 
 	if (events->user_arrival_to_customer_support.user_arrival_time > STOP)
 	{
@@ -60,6 +60,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_CUSTOMER_SUPPORT_SERVER; i++)
 	{
+		printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
 		if (state->server_occupation[i] == 0)
 		{
 			idle_offset = i;
@@ -96,9 +97,17 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 	if (idle_offset == -1)
 	{
-		// CASE 1: delete a node from head_ticket_purchased and add to customer support queue
-		tail_job = events->head_ticket_purchased;
-		events->head_ticket_purchased = tail_job->next;
+		if (events->head_queue_customer_support == NULL)
+		{
+			printf("la testa è nulla\n");
+		}
+		else
+		{
+			printf("la testa non è null\n");
+		}
+
+		// tail_job = events->head_queue_customer_support;
+		// events->head_ticket_purchased = tail_job->next;
 
 		if (events->head_queue_customer_support == NULL)
 		{
@@ -106,7 +115,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			events->head_queue_customer_support->next = NULL;
 			events->head_queue_customer_support->prev = NULL;
 			events->tail_queue_customer_support = tail_job;
-			free(tail_job);
+			tail_job = NULL;
 		}
 		else
 		{
@@ -114,7 +123,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			tail_job->next = NULL;
 			tail_job->prev = events->tail_queue_customer_support;
 			events->tail_queue_customer_support = tail_job;
-			free(tail_job);
+			tail_job = NULL;
 		}
 	}
 

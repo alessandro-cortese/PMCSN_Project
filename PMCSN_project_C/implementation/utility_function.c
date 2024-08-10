@@ -224,6 +224,7 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, stru
 {
     if (Random() <= /*P_OF_CUSTOMER_SUPPORT*/ 1.0)
     {
+        printf("Route to customer support!\n");
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
         if (!job)
         {
@@ -251,11 +252,38 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, stru
         }
 
         job = NULL;
-        user_arrivals_customer_support(events, time, state, loss, rate);
-        printf("Dopo la chiamata a user arrival a customer support!\n");
+        user_arrivals_customer_support(events, time, &state[2], loss, rate);
+        printf("\nDopo la chiamata a user arrival a customer support!\n");
     }
     else
     {
-        printf("Qui deve andare nell'altra funzione simile a questa ma con security check!\n");
+        printf("Route to security check queue!\n");
+        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+        if (!job)
+        {
+            printf("Error in mallo in routing_ticket_purchased to security check queue!\n");
+            exit(-1);
+        }
+
+        job = events->head_ticket_purchased;
+        events->head_ticket_purchased = job->next;
+
+        if (events->head_user_to_security_check == NULL)
+        {
+            events->head_user_to_security_check = job;
+            events->tail_user_to_security_check = job;
+            job->next = NULL;
+            job->prev = NULL;
+        }
+        else
+        {
+            events->tail_user_to_security_check->next = job;
+            job->prev = events->tail_user_to_security_check;
+            job->next = NULL;
+            events->tail_user_to_security_check = job;
+                }
+        job = NULL;
+        user_arrivals_security_check(events, time, &state[3], loss, rate);
+        printf("\nDopo la chiamata a user arrival a security check!\n");
     }
 }

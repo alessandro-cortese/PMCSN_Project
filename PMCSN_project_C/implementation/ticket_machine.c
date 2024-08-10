@@ -18,7 +18,6 @@ double get_ticket_machine_departure(double start)
 {
 	SelectStream(4);
 	double departure = start + Exponential(SR_TICKET_STATION);
-	printf("Depature for ticket machine is %f\n", departure);
 	return departure;
 }
 
@@ -29,7 +28,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 
 	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
-	printf("Dentro user arrival ticket machine: %f\n", events->user_arrival_to_ticket_machine.user_arrival_time);
+	printf("\nDentro user arrival ticket machine: %f\n", events->user_arrival_to_ticket_machine.user_arrival_time);
 
 	time->last[0] = time->current;
 
@@ -37,13 +36,14 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	{
 		events->user_arrival_to_ticket_machine.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;
-		printf("events->user_arrival_to_ticket_machine.is_user_arrival_active = %d\n", events->user_arrival_to_ticket_machine.is_user_arrival_active);
+		printf("Stop arrival to ticket machine!\n");
 	}
 
 	// Search idle server
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_TICKET_MACHINE_SERVER; i++)
 	{
+
 		if (state->server_occupation[i] == 0)
 		{
 			idle_offset = i;
@@ -127,7 +127,6 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		events->tail_ticket_purchased = tail_job;
 	}
 	free(tail_job);
-
 	routing_ticket_purchased(events, time, state, loss, rate);
 }
 
