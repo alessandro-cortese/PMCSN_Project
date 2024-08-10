@@ -26,25 +26,14 @@ struct loss loss[5];
 
 double get_user_arrival_to_ticket_purchased(double arrival, double rate)
 {
-	/*
-	if (Random() <= P_OF_TICKET_PURCHASED_ONLINE)
-	{
-		printf("rand pick purchased online\n");
-		SelectStream(15);
-		arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
-		return (arrival);
-	}
-	else
-	{
-		if(arrival != 0.0)
-			return arrival;
-	}
-	*/
 	SelectStream(15);
 	arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
 	return (arrival);
 }
-
+struct states* get_first_state_address() {
+    // Return the address of the first element in the array
+    return &state[0];
+}
 double rate;
 
 void initializeEventList(int *n)
@@ -209,7 +198,8 @@ void append_user_arrival_ticket_purchased()
 	}
 
 	tail_job = NULL;
-	routing_ticket_purchased(&events, t, state, loss, rate);
+	printf("Indirizzo state di ticket purchased is %p\n", state);
+	routing_ticket_purchased(&events, t, loss, rate);
 }
 
 int main(int argc, char **argv)

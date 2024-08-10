@@ -49,7 +49,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 		}
 	}
 
-	printf("idle offset: %d\n", idle_offset);
+	printf("idle offset for ticket_office: %d\n", idle_offset);
 
 	if (idle_offset >= 0)
 	{
@@ -82,6 +82,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 
 void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
+	printf("Indirizzo state for departure ticket office is %p\n", state);
 	state->population -= 1;
 
 	// If the population is bigger of 0 then update server completion time,
@@ -121,8 +122,8 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		events->tail_ticket_purchased = tail_job;
 	}
 	tail_job = NULL;
-	printf("PRIMAAAAA\n");
-	routing_ticket_purchased(events, time, state, loss, rate);
+	printf("Indirizzo state for departure ticket office is %p\n", state);
+	routing_ticket_purchased(events, time, loss, rate);
 }
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)

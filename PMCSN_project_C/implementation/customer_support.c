@@ -36,7 +36,7 @@ double get_customer_support_departure(double start)
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
 	printf("Dentro user arrival in customer support!\n");
-	// TODO: Define a function with different stream
+
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
@@ -68,7 +68,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		}
 	}
 
-	printf("idle_offset = %d\n", idle_offset);
+	printf("idle_offset for customer support = %d\n", idle_offset);
 
 	if (idle_offset >= 0 && events->head_queue_customer_support == NULL)
 	{

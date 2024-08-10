@@ -11,6 +11,7 @@
 #include "./../headers/ticket_gate.h"
 #include "./../headers/constants.h"
 #include "./../headers/rngs.h"
+#include "./../headers/simulation.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -220,8 +221,10 @@ int get_total_busy_servers(int num_servers, int *server_list)
     return count;
 }
 
-void routing_ticket_purchased(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+void routing_ticket_purchased(struct event_list *events, struct time *time, struct loss *loss, double rate)
 {
+    struct states* state = get_first_state_address();
+    printf("states address is %p\n", state);
     if (Random() <= /*P_OF_CUSTOMER_SUPPORT*/ 1.0)
     {
         printf("Route to customer support!\n");
@@ -252,7 +255,7 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, stru
         }
 
         job = NULL;
-        user_arrivals_customer_support(events, time, &state[2], loss, rate);
+        user_arrivals_customer_support(events, time, &state[2], &loss[2], rate);
         printf("\nDopo la chiamata a user arrival a customer support!\n");
     }
     else
@@ -281,7 +284,7 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, stru
             job->prev = events->tail_user_to_security_check;
             job->next = NULL;
             events->tail_user_to_security_check = job;
-                }
+        }
         job = NULL;
         user_arrivals_security_check(events, time, &state[3], loss, rate);
         printf("\nDopo la chiamata a user arrival a security check!\n");

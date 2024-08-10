@@ -5,4 +5,4 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
 double get_smallest(double *values, int len);
 double get_minimum_time(struct event_list events, struct states *state, int *n);
 int get_total_busy_servers(int num_servers, int *server_list);
-void routing_ticket_purchased(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
+void routing_ticket_purchased(struct event_list *events, struct time *time, struct loss *loss, double rate);

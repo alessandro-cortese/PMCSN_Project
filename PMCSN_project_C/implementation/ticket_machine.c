@@ -85,6 +85,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 
 void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
+	printf("Indirizzo state for departure ticket machine is %p\n", state);
 	state->population -= 1;
 
 	// TODO: per il modello migliorativo considerare una coda con priorità
@@ -127,7 +128,8 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		events->tail_ticket_purchased = tail_job;
 	}
 	free(tail_job);
-	routing_ticket_purchased(events, time, state, loss, rate);
+	printf("Indirizzo state for departure ticket machine is %p\n", state);
+	routing_ticket_purchased(events, time, loss, rate);
 }
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
