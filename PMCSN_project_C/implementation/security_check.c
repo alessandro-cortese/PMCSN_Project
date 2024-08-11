@@ -58,7 +58,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		}
 
 		if (idle_offset >= 0)
-		{	
+		{
 			// Set idle server to busy server and update departure time
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
@@ -135,9 +135,10 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 			events->head_ticket_gate->next = tail;
 			tail->prev = events->tail_ticket_gate;
 			tail->next = NULL;
-			events->tail_customer_support = (struct abandon_node *)tail;
+			events->tail_ticket_gate = tail;
 		}
 		tail = NULL;
+		routing_ticket_gate(events, time);
 	}
 	else
 	{

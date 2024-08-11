@@ -24,7 +24,7 @@ double get_ticket_gate_departure(double start)
 	return departure;
 }
 
-void user_arrivals_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+void user_arrivals_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss)
 {
 	printf("Dentro user arrival ticket gate\n");
 	int idle_offset = -1;
@@ -57,7 +57,7 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 		// Set idle server to busy server and update departure time
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_ticket_gate[idle_offset] = get_ticket_gate_departure(time->current);
-
+		printf("Il completion times di ticket gate è: %f\n", events->completionTimes_ticket_gate[idle_offset]);
 		time->last[4] = time->current;
 
 		tail_job = events->head_ticket_gate;

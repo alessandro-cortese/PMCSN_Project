@@ -10,7 +10,6 @@ double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
 	SelectStream(3);
 	arrival += Exponential(rate / (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
-	printf("arrival final is : %f\n", arrival);
 	return (arrival);
 }
 
@@ -18,7 +17,6 @@ double get_ticket_office_departure(double start)
 {
 	SelectStream(5);
 	double departure = start + Exponential(SR_TICKET_OFFICE_OPERATOR);
-	printf("Dearture ticket office: %f\n", departure);
 	return departure;
 }
 
@@ -82,7 +80,6 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 
 void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
-	printf("Indirizzo state for departure ticket office is %p\n", state);
 	state->population -= 1;
 
 	// If the population is bigger of 0 then update server completion time,

@@ -344,7 +344,13 @@ void routing_security_check(struct event_list *events, struct time *time, double
             events->tail_ticket_gate = job;
         }
         job = NULL;
-        user_arrivals_ticket_gate(events, time, &state[4], &loss[4], rate);
+        user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
         printf("Dopo la chiamata a user arrival a ticket gate in routing security check!\n");
     }
+    
+}
+void routing_ticket_gate(struct event_list *events, struct time *time){
+    struct states* state = get_first_state_address();
+    struct loss* loss = get_first_loss();
+    user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }
