@@ -64,8 +64,6 @@ struct event_list
     // security_check
     struct user_arrival user_arrival_to_security_check;
     double *completionTimes_security_check;
-    struct queue_node *head_security_check;
-    struct queue_node *tail_security_check;
 
     // ticket_gate
     struct user_arrival user_arrival_to_ticket_gate;

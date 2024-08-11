@@ -8,14 +8,6 @@
 
 int processed_job_customer_support[NUMBER_OF_CUSTOMER_SUPPORT_SERVER];
 
-// we don't need to model the stream cause it's the previous one
-//  double get_user_arrival_to_customer_support(double arrival)
-//  {
-//  	// TODO: bisogna capire come riunire i flussi
-//  	//		e aggiungere la probabilità
-//  	return (arrival);
-//  }
-
 double get_customer_support_departure(double start)
 {
 	SelectStream(7);
@@ -24,14 +16,6 @@ double get_customer_support_departure(double start)
 	printf("Insider get customer support departure, departure = %f\n", departure);
 	return departure;
 }
-
-// TODO: understand why exist...
-// double get_abandon_customer_support(double arrival)
-// {
-// 	SelectStream(12);
-// 	double abandon = arrival + Exponential(P_LEAVE_CUSTOMER_SUPPORT);
-// 	return abandon;
-// }
 
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
@@ -70,44 +54,32 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 	printf("idle_offset for customer support = %d\n", idle_offset);
 
-	if (idle_offset >= 0 && events->head_queue_customer_support == NULL)
+	if (events->head_queue_customer_support == NULL)
 	{
-		printf("Prima run\n");
-		// CASE 0: change head ticket purchased and store job id into array
-		state->server_occupation[idle_offset] = 1;
-		events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
-		processed_job_customer_support[idle_offset] = events->head_ticket_purchased->id;
-		events->head_ticket_purchased = events->head_ticket_purchased->next;
+		printf("events->head_queue_customer_support è null\n");
 	}
-	else if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
+
+	if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
 	{
 		// delete from customer support queue
 		printf("Vera prima run\n");
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
+
 		processed_job_customer_support[idle_offset] = events->head_queue_customer_support->id;
 		events->head_queue_customer_support = events->head_queue_customer_support->next;
+
 		tail_job->id = loss->index_user;
 		events->tail_queue_customer_support->next = tail_job;
 		tail_job->prev = events->tail_queue_customer_support;
 		tail_job->next = NULL;
 		events->tail_queue_customer_support = tail_job;
-		free(tail_job);
+
+		tail_job = NULL;
 	}
 
 	if (idle_offset == -1)
 	{
-		if (events->head_queue_customer_support == NULL)
-		{
-			printf("la testa è nulla\n");
-		}
-		else
-		{
-			printf("la testa non è null\n");
-		}
-
-		// tail_job = events->head_queue_customer_support;
-		// events->head_ticket_purchased = tail_job->next;
 
 		if (events->head_queue_customer_support == NULL)
 		{
@@ -180,6 +152,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 		events->completionTimes_customer_support[server_offset] = get_customer_support_departure(time->current);
 		state->server_occupation[server_offset] = 0;
 		tail_job->id = processed_job_customer_support[server_offset];
+		tail_job->arrival_time = events->completionTimes_customer_support[server_offset];
 	}
 	else
 	{
@@ -195,23 +168,22 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 	else
 	{
-		tail_job->arrival_time = time->current;
-
 		if (events->head_user_to_security_check == NULL)
 		{
 			events->head_user_to_security_check = tail_job;
-			events->head_user_to_security_check->prev = NULL;
-			events->head_user_to_security_check->next = NULL;
 			events->tail_user_to_security_check = tail_job;
+			tail_job->prev = NULL;
+			tail_job->next = NULL;
 		}
-		else if (events->head_user_to_security_check != NULL)
+		else
 		{
-			events->head_user_to_security_check->next = tail_job;
+			events->tail_user_to_security_check->next = tail_job;
 			tail_job->prev = events->tail_user_to_security_check;
 			tail_job->next = NULL;
 			events->tail_user_to_security_check = tail_job;
 		}
-		free(tail_job);
+		tail_job = NULL;
+		routing_security_check(events, time, rate);
 	}
 }
 

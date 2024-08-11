@@ -3,7 +3,7 @@
 #define SEED 123456789
 
 // Dimension of array of time
-#define DIM 14
+#define DIM 13
 
 // Number of servers of ticket machine service node
 #define NUMBER_OF_TICKET_MACHINE_SERVER 2

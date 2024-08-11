@@ -76,7 +76,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			events->head_ticket_office = tail_job;
 			events->tail_ticket_office = tail_job;
 		}
-		free(tail_job);
+		tail_job = NULL;
 	}
 }
 
@@ -122,8 +122,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		events->tail_ticket_purchased = tail_job;
 	}
 	tail_job = NULL;
-	printf("Indirizzo state for departure ticket office is %p\n", state);
-	routing_ticket_purchased(events, time, loss, rate);
+	routing_ticket_purchased(events, time, rate);
 }
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)

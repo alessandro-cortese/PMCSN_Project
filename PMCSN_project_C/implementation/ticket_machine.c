@@ -127,9 +127,8 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		tail_job->next = NULL;
 		events->tail_ticket_purchased = tail_job;
 	}
-	free(tail_job);
-	printf("Indirizzo state for departure ticket machine is %p\n", state);
-	routing_ticket_purchased(events, time, loss, rate);
+	tail_job = NULL;
+	routing_ticket_purchased(events, time, rate);
 }
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)

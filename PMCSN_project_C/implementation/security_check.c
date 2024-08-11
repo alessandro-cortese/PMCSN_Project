@@ -8,14 +8,6 @@
 int processed_job_security_check[NUMBER_OF_SECURITY_CHECK_SERVERS];
 int busy_server = 0;
 
-// TODO: we have to understad why exist...
-// double get_user_arrival_to_security_check(double arrival)
-// {
-// 	// TODO: bisogna capire come riunire i flussi
-// 	//		e aggiungere la probabilità
-// 	return (arrival);
-// }
-
 double get_security_check_departure(double start)
 {
 	SelectStream(8);
@@ -23,26 +15,28 @@ double get_security_check_departure(double start)
 	return departure;
 }
 
-// TODO: we have to understand why exists
-// double get_abandon_security_check(double arrival)
-// {
-// 	SelectStream(13);
-// 	double abandon = arrival + Exponential(P_LEAVE_SECURITY_CONTROL);
-// 	return abandon;
-// }
-
 void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
+	printf("Inside user arrival security check!\n");
+
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
 		printf("Error in malloc in user arrival in security check!\n");
 		exit(-1);
 	}
-	if (Random() <= P_OF_SECURITY_CHECK && busy_server < NUMBER_OF_SECURITY_CHECK_SERVERS)
+
+	printf("Prima\n");
+	if (busy_server < NUMBER_OF_SECURITY_CHECK_SERVERS)
 	{
 		loss->index_user += 1;
 		state->population += 1;
+
+		printf("prima 2\n");
+		if (events->head_user_to_security_check == NULL)
+		{
+			printf("la testa è null\n");
+		}
 		events->user_arrival_to_security_check.user_arrival_time = events->head_user_to_security_check->arrival_time;
 
 		time->last[3] = time->current;
@@ -58,13 +52,13 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		{
 			if (state->server_occupation[i] == 0)
 			{
-				idle_offset == i;
+				idle_offset = i;
 				break;
 			}
 		}
 
 		if (idle_offset >= 0)
-		{
+		{	
 			// Set idle server to busy server and update departure time
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
@@ -99,6 +93,8 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
+	printf("Inside user departure security check!\n");
+
 	state->population -= 1;
 	busy_server -= 1;
 
@@ -141,7 +137,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 			tail->next = NULL;
 			events->tail_customer_support = (struct abandon_node *)tail;
 		}
-		free(tail);
+		tail = NULL;
 	}
 	else
 	{

@@ -25,9 +25,11 @@ double Exponential(double m)
 bool is_system_empty(struct states *state, int *n)
 {
 
+    bool flag = true;
+
     // This if check if there are job in the various centers
     if (state[0].population > 0 || state[1].population > 0 || state[2].population > 0 || state[3].population > 0 || state[4].population > 0)
-        return false;
+        flag = false;
 
     // This for checks if there are jobs in the various server, both in the centers and in the queues
     for (int j = 0; j < 5; j++)
@@ -35,9 +37,14 @@ bool is_system_empty(struct states *state, int *n)
         for (int i = 0; i < n[j]; i++)
         {
             if (state[j].server_occupation[i] != 0)
-                return false;
+            {
+                flag = false;
+                break;
+            }
         }
     }
+
+    return flag;
 }
 
 struct next_abandon *get_min_abandon(struct abandon_node *head)
@@ -188,8 +195,7 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     times[9] = events.user_arrival_to_ticket_machine.user_arrival_time;
     times[10] = events.user_arrival_to_ticket_office.user_arrival_time;
     times[11] = events.user_arrival_to_customer_support.user_arrival_time;
-    times[12] = events.user_arrival_to_security_check.user_arrival_time;
-    times[13] = events.user_arrival_to_ticket_gate.user_arrival_time;
+    times[12] = events.user_arrival_to_ticket_gate.user_arrival_time;
 
     for (int i = 0; i < DIM; i++)
     {
@@ -221,11 +227,12 @@ int get_total_busy_servers(int num_servers, int *server_list)
     return count;
 }
 
-void routing_ticket_purchased(struct event_list *events, struct time *time, struct loss *loss, double rate)
+void routing_ticket_purchased(struct event_list *events, struct time *time, double rate)
 {
-    struct states* state = get_first_state_address();
-    printf("states address is %p\n", state);
-    if (Random() <= /*P_OF_CUSTOMER_SUPPORT*/ 1.0)
+    struct states *state = get_first_state_address();
+    struct loss *loss = get_first_loss();
+
+    if (Random() <= P_OF_CUSTOMER_SUPPORT)
     {
         printf("Route to customer support!\n");
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -260,23 +267,23 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, stru
     }
     else
     {
-        printf("Route to security check queue!\n");
+        // da ticket purchased a head user_security_check
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
         if (!job)
         {
-            printf("Error in mallo in routing_ticket_purchased to security check queue!\n");
+            printf("Error in malloc in routing ticket purchased to ticket gate!\n");
             exit(-1);
         }
-
         job = events->head_ticket_purchased;
-        events->head_ticket_purchased = job->next;
+        events->head_ticket_purchased = events->head_ticket_purchased->next;
 
         if (events->head_user_to_security_check == NULL)
         {
             events->head_user_to_security_check = job;
             events->tail_user_to_security_check = job;
-            job->next = NULL;
             job->prev = NULL;
+            job->next = NULL;
+            printf("Entra qui\n");
         }
         else
         {
@@ -284,9 +291,60 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, stru
             job->prev = events->tail_user_to_security_check;
             job->next = NULL;
             events->tail_user_to_security_check = job;
+            printf("Entra qui, parte 2\n");
         }
         job = NULL;
-        user_arrivals_security_check(events, time, &state[3], loss, rate);
-        printf("\nDopo la chiamata a user arrival a security check!\n");
+        routing_security_check(events, time, rate);
+    }
+}
+
+void routing_security_check(struct event_list *events, struct time *time, double rate)
+{
+    struct states *state = get_first_state_address();
+    struct loss *loss = get_first_loss();
+
+    if (events->head_user_to_security_check == NULL)
+    {
+        printf("La testa è null, in routing to security check\n");
+    }
+
+    if (Random() <= P_OF_SECURITY_CHECK)
+    {
+        printf("Route to security check queue!\n");
+        user_arrivals_security_check(events, time, &state[3], &loss[3], rate);
+        printf("\nDopo la chiamata routing to security check!\n");
+    }
+    else
+    {
+        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+        if (!job)
+        {
+            printf("Error in malloc in routing security check to ticket gate!\n");
+            exit(-1);
+        }
+        job = events->head_user_to_security_check;
+        if (events->head_user_to_security_check == NULL)
+        {
+            printf("qui la testa è null\n");
+        }
+        events->head_user_to_security_check = events->head_user_to_security_check->next;
+
+        if (events->head_ticket_gate == NULL)
+        {
+            events->head_ticket_gate = job;
+            events->tail_ticket_gate = job;
+            job->prev = NULL;
+            job->next = NULL;
+        }
+        else
+        {
+            events->tail_ticket_gate->next = job;
+            job->prev = events->tail_ticket_gate;
+            job->next = NULL;
+            events->tail_ticket_gate = job;
+        }
+        job = NULL;
+        user_arrivals_ticket_gate(events, time, &state[4], &loss[4], rate);
+        printf("Dopo la chiamata a user arrival a ticket gate in routing security check!\n");
     }
 }
