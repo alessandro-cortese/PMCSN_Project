@@ -47,7 +47,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			}
 		}
 
-		if (Random() <= P_LEAVE_TICKET_OFFICE)
+		if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 1.0)
 		{
 			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 			if (!tail_job)

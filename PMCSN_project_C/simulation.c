@@ -256,6 +256,13 @@ int main(int argc, char **argv)
 	{
 
 		printf("---------------------------------------------------------------------\n");
+		printf("Popolazione prima dell'evento\n");
+
+		printf("state[0].population = %d\n", state[0].population);
+		printf("state[1].population = %d\n", state[1].population);
+		printf("state[2].population = %d\n", state[2].population);
+		printf("state[3].population = %d\n", state[3].population);
+		printf("state[4].population = %d\n\n\n", state[4].population);
 
 		t->next = get_minimum_time(events, state, n);
 		printf("t->current:%f\n", t->current);
@@ -353,6 +360,13 @@ int main(int argc, char **argv)
 			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
 
+		printf("\nPopolazione dopo l'evento\n");
+		printf("state[0].population = %d\n", state[0].population);
+		printf("state[1].population = %d\n", state[1].population);
+		printf("state[2].population = %d\n", state[2].population);
+		printf("state[3].population = %d\n", state[3].population);
+		printf("state[4].population = %d\n\n", state[4].population);
+
 		free(next_ticket_machine_abandon);
 		free(next_ticket_office_abandon);
 		free(next_customer_support_abandon);
@@ -365,6 +379,8 @@ int main(int argc, char **argv)
 
 		sleep(1);
 
+		puts("");
+		puts("");
 		puts("");
 		puts("");
 	}

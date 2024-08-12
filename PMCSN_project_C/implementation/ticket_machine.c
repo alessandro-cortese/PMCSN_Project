@@ -51,7 +51,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 			}
 		}
 
-		if (Random() <= P_LEAVE_TICKET_STATION)
+		if (Random() <= /*P_LEAVE_TICKET_STATION*/ 1.0)
 		{
 			struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 			if (!abandon_job)
@@ -61,13 +61,20 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 			}
 			abandon_job->id = loss->index_user;
 			abandon_job->abandon_time = time->current;
-			abandon_job->next = NULL;
-			abandon_job->prev = events->tail_ticket_machine;
 
 			// If the first time that a job adandon the queue
 			if (events->head_ticket_machine == NULL)
 			{
 				events->head_ticket_machine = abandon_job;
+				events->tail_ticket_machine = abandon_job;
+				abandon_job->prev = NULL;
+				abandon_job->next = NULL;
+			}
+			else
+			{
+				events->tail_ticket_machine->next = abandon_job;
+				abandon_job->prev = events->tail_ticket_machine;
+				abandon_job->next = NULL;
 				events->tail_ticket_machine = abandon_job;
 			}
 

@@ -50,7 +50,7 @@ bool is_system_empty(struct states *state, int *n)
 struct next_abandon *get_min_abandon(struct abandon_node *head)
 {
     // GetMinAbandon
-    struct next_abandon *min = (struct next_abandon *)malloc(sizeof(struct next_abandon *));
+    struct next_abandon *min = (struct next_abandon *)malloc(sizeof(struct next_abandon));
 
     if (head != NULL)
     {
@@ -156,7 +156,6 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
 
     if (events.head_ticket_machine != NULL)
     {
-
         abandon_ticket_machine = get_min_abandon(events.head_ticket_machine);
         min_abandon_ticket_machine = abandon_ticket_machine->abandonTime;
     }
