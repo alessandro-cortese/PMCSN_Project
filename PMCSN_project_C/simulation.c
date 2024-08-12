@@ -307,6 +307,7 @@ int main(int argc, char **argv)
 		else if (t->current == next_ticket_machine_abandon->abandonTime)
 		{
 			printf("*** Evento abandon_ticket_machine ***\n");
+			printf("Passing next_ticket_machine_abandon->user_Id: %d", next_ticket_machine_abandon->user_Id);
 			abandon_ticket_machine(&events, &state[0], &loss[0], next_ticket_machine_abandon->user_Id);
 		}
 		else if (t->current == events.user_arrival_to_ticket_office.user_arrival_time)

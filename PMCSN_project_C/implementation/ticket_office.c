@@ -34,46 +34,50 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;
 		printf("Stop arrival to ticket office!\n");
 	}
-	else
+	// Search idle server
+	int idle_offset = -1;
+	for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
 	{
-		// Search idle server
-		int idle_offset = -1;
-		for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
+		if (state->server_occupation[i] == 0)
 		{
-			if (state->server_occupation[i] == 0)
-			{
-				idle_offset = i;
-				break;
-			}
+			idle_offset = i;
+			break;
 		}
+	}
 
-		if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 1.0)
+	if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 1.0)
+	{
+		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
+		if (!tail_job)
 		{
-			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
-			if (!tail_job)
-			{
-				printf("Error in malloc in user arrival in ticket office!\n");
-				exit(-1);
-			}
-			tail_job->id = loss->index_user;
-			tail_job->abandon_time = time->current;
+			printf("Error in malloc in user arrival in ticket office!\n");
+			exit(-1);
+		}
+		tail_job->id = loss->index_user;
+		printf("abandon job id is %d\n", tail_job->id);
+		tail_job->abandon_time = time->current;
+		printf("abandon time is %f\n", tail_job->abandon_time);
+	
+		// If is the first time that a job abandon the queue
+		if (events->head_ticket_office == NULL)
+		{
+			events->head_ticket_office = tail_job;
+			events->tail_ticket_office = tail_job;
+			tail_job->prev = NULL;
 			tail_job->next = NULL;
+		}else{
+			events->tail_ticket_office->next = tail_job;
 			tail_job->prev = events->tail_ticket_office;
-
-			// If is the first time that a job abandon the queue
-			if (events->head_ticket_office == NULL)
-			{
-				events->head_ticket_office = tail_job;
-				events->tail_ticket_office = tail_job;
-			}
-			tail_job = NULL;
+			tail_job->next = NULL;
+			events->tail_ticket_office = tail_job;
 		}
-		else if (idle_offset >= 0)
-		{
-			// Set idle server to busy server and update departure time
-			state->server_occupation[idle_offset] = 1;
-			events->completionTimes_ticket_office[idle_offset] = get_ticket_office_departure(time->current);
-		}
+		tail_job = NULL;
+	}
+	else if (idle_offset >= 0)
+	{
+		// Set idle server to busy server and update departure time
+		state->server_occupation[idle_offset] = 1;
+		events->completionTimes_ticket_office[idle_offset] = get_ticket_office_departure(time->current);
 	}
 }
 
@@ -130,7 +134,10 @@ void abandon_ticket_office(struct event_list *events, struct states *state, stru
 		while (current != NULL)
 		{
 			if (current->id == job_id)
+			{
+				printf("current->id = %d\n", current->id);
 				break;
+			}
 			current = current->next;
 		}
 

@@ -169,7 +169,7 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     if (events.head_customer_support != NULL)
     {
         abandon_customer_support = get_min_abandon(events.head_customer_support);
-        min_abandon_ticket_office = abandon_customer_support->abandonTime;
+        min_abandon_customer_support = abandon_customer_support->abandonTime;
     }
 
     struct next_job *next_queue_time_ticket_machine = get_min_queue_time(events, n[0], state[0].server_occupation, 1);
