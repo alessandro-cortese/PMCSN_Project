@@ -28,7 +28,6 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 
 	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
-	printf("\nDentro user arrival ticket machine: %f\n", events->user_arrival_to_ticket_machine.user_arrival_time);
 
 	time->last[0] = time->current;
 
@@ -51,7 +50,6 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 				break;
 			}
 		}
-		printf("idle offset for ticket machine is %d\n", idle_offset);
 
 		if (Random() <= P_LEAVE_TICKET_STATION)
 		{
@@ -88,14 +86,8 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 
 void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
-	printf("Inside departure ticket machine\n");
-	printf("population in user ticket machine: %d\n", state->population);
 	state->population -= 1;
 
-	// TODO: per il modello migliorativo considerare una coda con priorità
-
-	// If the population is bigger of 0 then update server completion time,
-	// otherwise reset data of the server.
 	if (state->population > 0)
 	{
 		events->completionTimes_ticket_machine[server_offset] = get_ticket_machine_departure(time->current);
@@ -137,6 +129,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
+	printf("Abandon ticket machine!\n");
 	if (events->head_ticket_machine != NULL)
 	{
 		struct abandon_node *current = events->head_ticket_machine;

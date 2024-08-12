@@ -229,6 +229,13 @@ int get_total_busy_servers(int num_servers, int *server_list)
     return count;
 }
 
+void feedback(struct event_list *events, struct time *time, double rate)
+{
+    struct states *state = get_first_state_address();
+    struct loss *loss = get_first_loss();
+    user_arrivals_ticket_office(events, time, &state[1], &loss[1], rate);
+}
+
 void routing_ticket_purchased(struct event_list *events, struct time *time, double rate)
 {
     struct states *state = get_first_state_address();
@@ -265,7 +272,6 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
 
         job = NULL;
         user_arrivals_customer_support(events, time, &state[2], &loss[2], rate);
-        printf("\nDopo la chiamata a user arrival a customer support!\n");
     }
     else
     {
@@ -285,7 +291,6 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
             events->tail_user_to_security_check = job;
             job->prev = NULL;
             job->next = NULL;
-            printf("Entra qui\n");
         }
         else
         {
@@ -293,7 +298,6 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
             job->prev = events->tail_user_to_security_check;
             job->next = NULL;
             events->tail_user_to_security_check = job;
-            printf("Entra qui, parte 2\n");
         }
         job = NULL;
         routing_security_check(events, time, rate);
@@ -305,16 +309,10 @@ void routing_security_check(struct event_list *events, struct time *time, double
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
 
-    if (events->head_user_to_security_check == NULL)
-    {
-        printf("La testa è null, in routing to security check\n");
-    }
-
     if (Random() <= P_OF_SECURITY_CHECK)
     {
         printf("Route to security check queue!\n");
         user_arrivals_security_check(events, time, &state[3], &loss[3], rate);
-        printf("\nDopo la chiamata routing to security check!\n");
     }
     else
     {
@@ -325,10 +323,6 @@ void routing_security_check(struct event_list *events, struct time *time, double
             exit(-1);
         }
         job = events->head_user_to_security_check;
-        if (events->head_user_to_security_check == NULL)
-        {
-            printf("qui la testa è null\n");
-        }
         events->head_user_to_security_check = events->head_user_to_security_check->next;
 
         if (events->head_ticket_gate == NULL)
@@ -347,7 +341,6 @@ void routing_security_check(struct event_list *events, struct time *time, double
         }
         job = NULL;
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
-        printf("Dopo la chiamata a user arrival a ticket gate in routing security check!\n");
     }
 }
 void routing_ticket_gate(struct event_list *events, struct time *time)

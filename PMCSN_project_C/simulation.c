@@ -44,14 +44,11 @@ double rate;
 void initializeEventList(int *n)
 {
 	events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(START, rate);
-	printf("purchased online time arrival %f\n", events.user_who_has_purchased_ticket.user_arrival_time);
 	//  Init ticket machine
 	events.user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(START, rate);
-	printf("ticket machine time arrival %f\n", events.user_arrival_to_ticket_machine.user_arrival_time);
 	events.user_arrival_to_ticket_machine.is_user_arrival_active = true;
 	// Init ticket office
 	events.user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(START, rate);
-	printf("ticket office time arrival %f\n", events.user_arrival_to_ticket_office.user_arrival_time);
 	events.user_arrival_to_ticket_office.is_user_arrival_active = true;
 	// Init customer support
 	events.user_arrival_to_customer_support.user_arrival_time = (double)INFINITY;
@@ -189,7 +186,6 @@ void append_user_arrival_ticket_purchased()
 
 		if (events.head_ticket_purchased == NULL)
 		{
-			printf("Dentro, è la prima volta!\n");
 			events.head_ticket_purchased = tail_job;
 			events.head_ticket_purchased->prev = NULL;
 			events.head_ticket_purchased->next = NULL;
@@ -259,17 +255,11 @@ int main(int argc, char **argv)
 		   events.user_who_has_purchased_ticket.is_user_arrival_active || !is_system_empty(state, n))
 	{
 
-		printf("Popolazione prima dell'evento\n");
-
-		printf("state[0].population = %d\n", state[0].population);
-		printf("state[1].population = %d\n", state[1].population);
-		printf("state[2].population = %d\n", state[2].population);
-		printf("state[3].population = %d\n", state[3].population);
-		printf("state[4].population = %d\n", state[4].population);
+		printf("---------------------------------------------------------------------\n");
 
 		t->next = get_minimum_time(events, state, n);
-		printf("t->next: %f\n", t->next);
 		printf("t->current:%f\n", t->current);
+		printf("t->next: %f\n\n\n", t->next);
 		calcultate_area_struct(n);
 
 		struct next_abandon *next_ticket_machine_abandon = get_min_abandon(events.head_ticket_machine);
@@ -290,7 +280,7 @@ int main(int argc, char **argv)
 
 		t->current = t->next;
 
-		printf("Processo l'evento a che è a t->current: %f\n", t->current);
+		printf("Processo l'evento a che è a t->current: %f\n\n\n", t->current);
 
 		if (t->current == events.user_who_has_purchased_ticket.user_arrival_time)
 		{
@@ -363,13 +353,6 @@ int main(int argc, char **argv)
 			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
 
-		printf("\nPopolazione dopo l'evento\n");
-		printf("state[0].population = %d\n", state[0].population);
-		printf("state[1].population = %d\n", state[1].population);
-		printf("state[2].population = %d\n", state[2].population);
-		printf("state[3].population = %d\n", state[3].population);
-		printf("state[4].population = %d\n\n", state[4].population);
-
 		free(next_ticket_machine_abandon);
 		free(next_ticket_office_abandon);
 		free(next_customer_support_abandon);
@@ -382,8 +365,6 @@ int main(int argc, char **argv)
 
 		sleep(1);
 
-		puts("");
-		puts("");
 		puts("");
 		puts("");
 	}

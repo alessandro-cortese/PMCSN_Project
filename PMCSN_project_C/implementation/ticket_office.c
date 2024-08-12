@@ -25,7 +25,6 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 	loss->index_user += 1;
 	state->population += 1;
 	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
-	printf("\nDentro user arrival ticket office: %f\n", events->user_arrival_to_ticket_office.user_arrival_time);
 
 	time->last[1] = time->current;
 
@@ -47,8 +46,6 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 				break;
 			}
 		}
-
-		printf("idle offset for ticket_office: %d\n", idle_offset);
 
 		if (Random() <= P_LEAVE_TICKET_OFFICE)
 		{
@@ -126,6 +123,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
+	printf("Abandon ticket office!\n");
 	if (events->head_ticket_office != NULL)
 	{
 		struct abandon_node *current = events->head_ticket_office;

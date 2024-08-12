@@ -17,7 +17,6 @@ double get_security_check_departure(double start)
 
 void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	printf("Inside user arrival security check!\n");
 
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
@@ -26,17 +25,10 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		exit(-1);
 	}
 
-	printf("Prima\n");
 	if (busy_server < NUMBER_OF_SECURITY_CHECK_SERVERS)
 	{
 		loss->index_user += 1;
 		state->population += 1;
-
-		printf("prima 2\n");
-		if (events->head_user_to_security_check == NULL)
-		{
-			printf("la testa è null\n");
-		}
 		events->user_arrival_to_security_check.user_arrival_time = events->head_user_to_security_check->arrival_time;
 
 		time->last[3] = time->current;
@@ -93,8 +85,6 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
-	printf("Inside user departure security check!\n");
-
 	state->population -= 1;
 	busy_server -= 1;
 
@@ -142,6 +132,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	}
 	else
 	{
+		printf("Job have false document\n");
 		// prob of having false document or other problems
 		events->completionTimes_security_check[server_offset] = (double)INFINITY;
 		state->server_occupation[server_offset] = 0;

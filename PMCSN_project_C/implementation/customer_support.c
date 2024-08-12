@@ -11,16 +11,12 @@ int processed_job_customer_support[NUMBER_OF_CUSTOMER_SUPPORT_SERVER];
 double get_customer_support_departure(double start)
 {
 	SelectStream(7);
-	printf("Insider get customer support departure, start = %f\n", start);
 	double departure = start + Exponential(SR_CUSTOMER_SUPPORT_OPERATOR);
-	printf("Insider get customer support departure, departure = %f\n", departure);
 	return departure;
 }
 
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	printf("Dentro user arrival in customer support!\n");
-
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
@@ -44,7 +40,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_CUSTOMER_SUPPORT_SERVER; i++)
 	{
-		printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
 		if (state->server_occupation[i] == 0)
 		{
 			idle_offset = i;
@@ -52,17 +47,9 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		}
 	}
 
-	printf("idle_offset for customer support = %d\n", idle_offset);
-
-	if (events->head_queue_customer_support == NULL)
-	{
-		printf("events->head_queue_customer_support è null\n");
-	}
-
 	if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
 	{
 		// delete from customer support queue
-		printf("Vera prima run\n");
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
 
@@ -132,7 +119,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		}
 		free(abandon_job);
 	}
-	printf("Fine user arrival customer support!\n");
 }
 
 void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
@@ -163,8 +149,13 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	// feedback is here
 	if (Random() <= P_OF_CHANGE_TICKET)
 	{
+		printf("Feedback event\n");
+		tail_job = events->head_queue_customer_support;
+		events->head_queue_customer_support = tail_job->next;
+		tail_job->prev = NULL;
+		tail_job = NULL;
 		state->server_occupation[server_offset] = 0;
-		user_arrivals_ticket_office(events, time, state, loss, rate);
+		feedback(events, time, rate);
 	}
 	else
 	{
@@ -189,6 +180,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
+	printf("Abandon customer support!\n");
 	struct abandon_node *current = events->head_customer_support;
 	while (current != NULL)
 	{

@@ -8,3 +8,4 @@ int get_total_busy_servers(int num_servers, int *server_list);
 void routing_ticket_purchased(struct event_list *events, struct time *time, double rate);
 void routing_security_check(struct event_list *events, struct time *time, double rate);
 void routing_ticket_gate(struct event_list *events, struct time *time);
+void feedback(struct event_list *events, struct time *time, double rate);
