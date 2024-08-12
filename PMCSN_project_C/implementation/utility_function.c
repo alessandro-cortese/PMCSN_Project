@@ -116,6 +116,8 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
             min->serverOffset = i;
             min->completionTime = completionTimes[i];
         }
+        if (index == 5)
+            printf("completionTimes[%d] = %f\n", i, completionTimes[i]);
     }
 
     return min;
@@ -347,10 +349,10 @@ void routing_security_check(struct event_list *events, struct time *time, double
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
         printf("Dopo la chiamata a user arrival a ticket gate in routing security check!\n");
     }
-    
 }
-void routing_ticket_gate(struct event_list *events, struct time *time){
-    struct states* state = get_first_state_address();
-    struct loss* loss = get_first_loss();
+void routing_ticket_gate(struct event_list *events, struct time *time)
+{
+    struct states *state = get_first_state_address();
+    struct loss *loss = get_first_loss();
     user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }

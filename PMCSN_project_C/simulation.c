@@ -169,12 +169,6 @@ void calcultate_area_struct(int *n)
 
 void append_user_arrival_ticket_purchased()
 {
-	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
-	if (!tail_job)
-	{
-		printf("Error in malloc in append user arrival ticket purchased!\n");
-		exit(-1);
-	}
 	events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
 	if (events.user_who_has_purchased_ticket.user_arrival_time > STOP)
 	{
@@ -182,28 +176,36 @@ void append_user_arrival_ticket_purchased()
 		events.user_who_has_purchased_ticket.is_user_arrival_active = false;
 		printf("Stop arrival to ticket purchased!\n");
 	}
-
-	tail_job->id = loss->index_user;
-	tail_job->arrival_time = t->current;
-
-	if (events.head_ticket_purchased == NULL)
+	else
 	{
-		printf("Dentro, è la prima volta!\n");
-		events.head_ticket_purchased = tail_job;
-		events.head_ticket_purchased->prev = NULL;
-		events.head_ticket_purchased->next = NULL;
-		events.tail_ticket_purchased = tail_job;
-	}
-	else if (events.head_ticket_purchased != NULL)
-	{
-		events.tail_ticket_purchased->next = tail_job;
-		tail_job->prev = events.tail_ticket_purchased;
-		tail_job->next = NULL;
-		events.tail_ticket_purchased = tail_job;
-	}
+		struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
+		if (!tail_job)
+		{
+			printf("Error in malloc in append user arrival ticket purchased!\n");
+			exit(-1);
+		}
+		tail_job->id = loss->index_user;
+		tail_job->arrival_time = t->current;
 
-	tail_job = NULL;
-	routing_ticket_purchased(&events, t, rate);
+		if (events.head_ticket_purchased == NULL)
+		{
+			printf("Dentro, è la prima volta!\n");
+			events.head_ticket_purchased = tail_job;
+			events.head_ticket_purchased->prev = NULL;
+			events.head_ticket_purchased->next = NULL;
+			events.tail_ticket_purchased = tail_job;
+		}
+		else if (events.head_ticket_purchased != NULL)
+		{
+			events.tail_ticket_purchased->next = tail_job;
+			tail_job->prev = events.tail_ticket_purchased;
+			tail_job->next = NULL;
+			events.tail_ticket_purchased = tail_job;
+		}
+
+		tail_job = NULL;
+		routing_ticket_purchased(&events, t, rate);
+	}
 }
 
 int main(int argc, char **argv)
@@ -256,12 +258,14 @@ int main(int argc, char **argv)
 	while (events.user_arrival_to_ticket_machine.is_user_arrival_active || events.user_arrival_to_ticket_office.is_user_arrival_active ||
 		   events.user_who_has_purchased_ticket.is_user_arrival_active || !is_system_empty(state, n))
 	{
+
+		printf("Popolazione prima dell'evento\n");
+
 		printf("state[0].population = %d\n", state[0].population);
 		printf("state[1].population = %d\n", state[1].population);
 		printf("state[2].population = %d\n", state[2].population);
 		printf("state[3].population = %d\n", state[3].population);
 		printf("state[4].population = %d\n", state[4].population);
-
 
 		t->next = get_minimum_time(events, state, n);
 		printf("t->next: %f\n", t->next);
@@ -358,6 +362,13 @@ int main(int argc, char **argv)
 			printf("*** Evento : user_departure_ticket_gate ***\n");
 			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
+
+		printf("\nPopolazione dopo l'evento\n");
+		printf("state[0].population = %d\n", state[0].population);
+		printf("state[1].population = %d\n", state[1].population);
+		printf("state[2].population = %d\n", state[2].population);
+		printf("state[3].population = %d\n", state[3].population);
+		printf("state[4].population = %d\n\n", state[4].population);
 
 		free(next_ticket_machine_abandon);
 		free(next_ticket_office_abandon);

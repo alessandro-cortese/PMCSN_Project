@@ -56,6 +56,7 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 
 		// Set idle server to busy server and update departure time
 		state->server_occupation[idle_offset] = 1;
+		printf("time->current: %f\n", time->current);
 		events->completionTimes_ticket_gate[idle_offset] = get_ticket_gate_departure(time->current);
 		printf("Il completion times di ticket gate è: %f\n", events->completionTimes_ticket_gate[idle_offset]);
 		time->last[4] = time->current;
@@ -91,12 +92,37 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 		tail_job->prev = events->tail_ticket_gate;
 		tail_job->next = NULL;
 		events->tail_ticket_gate = tail_job;
+		printf("tail_job->arrival_time = %f\n", tail_job->arrival_time);
 	}
 }
 void user_departure_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
-	state->population -= 1;
-	events->completionTimes_ticket_gate[server_offset] = (double)INFINITY;
-	printf("events->completionTimes_ticket_gate[%d] %f\n", server_offset, events->completionTimes_ticket_gate[server_offset]);
-	state->server_occupation[server_offset] = 0;
+	if (state->population > 0 && events->head_ticket_gate != NULL)
+	{
+		state->population -= 1;
+
+		struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+		if (!job)
+		{
+			printf("Error in malloc in user departure ticket gate!\n");
+			exit(-1);
+		}
+
+		job = events->head_ticket_gate;
+		state->server_occupation[server_offset] = 1;
+		events->completionTimes_ticket_gate[server_offset] = get_ticket_gate_departure(job->arrival_time);
+		printf("Il completion times di ticket gate è: %f\n", events->completionTimes_ticket_gate[server_offset]);
+		time->last[4] = time->current;
+
+		events->head_ticket_gate = events->head_ticket_gate->next;
+		job->prev = NULL;
+		job->next = NULL;
+		free(job);
+	}
+	else if (state->population > 0 && events->head_ticket_gate == NULL)
+	{
+		state->population -= 1;
+		state->server_occupation[server_offset] = 0;
+		events->completionTimes_ticket_gate[server_offset] = (double)INFINITY;
+	}
 }

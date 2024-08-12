@@ -36,6 +36,7 @@ struct event_list
     // abandon queue ticket machine
     struct abandon_node *head_ticket_machine;
     struct abandon_node *tail_ticket_machine;
+
     // ticket office
     struct user_arrival user_arrival_to_ticket_office;
     double *completionTimes_ticket_office;
