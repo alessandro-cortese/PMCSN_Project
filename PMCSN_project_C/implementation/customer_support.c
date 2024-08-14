@@ -31,12 +31,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 	time->last[2] = time->current;
 
-	if (events->user_arrival_to_customer_support.user_arrival_time > STOP)
-	{
-		events->user_arrival_to_customer_support.user_arrival_time = (double)INFINITY;
-		events->user_arrival_to_customer_support.is_user_arrival_active = false;
-	}
-
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_CUSTOMER_SUPPORT_SERVER; i++)
 	{

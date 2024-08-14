@@ -22,8 +22,6 @@ double get_ticket_office_departure(double start)
 
 void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	loss->index_user += 1;
-	state->population += 1;
 	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
 
 	time->last[1] = time->current;
@@ -34,63 +32,81 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;
 		printf("Stop arrival to ticket office!\n");
 	}
-	// Search idle server
-	int idle_offset = -1;
-	for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
+	else
 	{
-		if (state->server_occupation[i] == 0)
-		{
-			idle_offset = i;
-			break;
-		}
-	}
+		loss->index_user += 1;
 
-	if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 1.0)
-	{
-		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
-		if (!tail_job)
+		// Search idle server
+		int idle_offset = -1;
+		for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
 		{
-			printf("Error in malloc in user arrival in ticket office!\n");
-			exit(-1);
+			if (state->server_occupation[i] == 0)
+			{
+				idle_offset = i;
+				break;
+			}
 		}
-		tail_job->id = loss->index_user;
-		printf("abandon job id is %d\n", tail_job->id);
-		tail_job->abandon_time = time->current;
-		printf("abandon time is %f\n", tail_job->abandon_time);
-	
-		// If is the first time that a job abandon the queue
-		if (events->head_ticket_office == NULL)
+
+		if (Random() <= P_LEAVE_TICKET_OFFICE)
 		{
-			events->head_ticket_office = tail_job;
-			events->tail_ticket_office = tail_job;
-			tail_job->prev = NULL;
-			tail_job->next = NULL;
-		}else{
-			events->tail_ticket_office->next = tail_job;
-			tail_job->prev = events->tail_ticket_office;
-			tail_job->next = NULL;
-			events->tail_ticket_office = tail_job;
+			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
+			if (!tail_job)
+			{
+				printf("Error in malloc in user arrival in ticket office!\n");
+				exit(-1);
+			}
+			tail_job->id = loss->index_user;
+			printf("abandon job id is %d\n", tail_job->id);
+			tail_job->abandon_time = time->current;
+			printf("abandon time is %f\n", tail_job->abandon_time);
+
+			// If is the first time that a job abandon the queue
+			if (events->head_ticket_office == NULL)
+			{
+				events->head_ticket_office = tail_job;
+				events->tail_ticket_office = tail_job;
+				tail_job->prev = NULL;
+				tail_job->next = NULL;
+			}
+			else
+			{
+				events->tail_ticket_office->next = tail_job;
+				tail_job->prev = events->tail_ticket_office;
+				tail_job->next = NULL;
+				events->tail_ticket_office = tail_job;
+			}
+			tail_job = NULL;
 		}
-		tail_job = NULL;
-	}
-	else if (idle_offset >= 0)
-	{
-		// Set idle server to busy server and update departure time
-		state->server_occupation[idle_offset] = 1;
-		events->completionTimes_ticket_office[idle_offset] = get_ticket_office_departure(time->current);
+		else
+		{
+			if (idle_offset >= 0)
+			{
+				// Set idle server to busy server and update departure time
+				state->server_occupation[idle_offset] = 1;
+				events->completionTimes_ticket_office[idle_offset] = get_ticket_office_departure(time->current);
+				state->server_count += 1;
+			}
+			else if (idle_offset == -1)
+			{
+				state->queue_count += +1;
+			}
+			state->population = state->queue_count + state->server_count;
+		}
 	}
 }
 
 void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
-	state->population -= 1;
+	state->server_count -= 1;
 
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
-	if (state->population > 0)
+	if (state->queue_count > 0)
 	{
 		events->completionTimes_ticket_office[server_offset] = get_ticket_office_departure(time->current);
 		state->server_occupation[server_offset] = 0;
+		state->server_count += 1;
+		state->queue_count -= 1;
 	}
 	else
 	{
@@ -122,6 +138,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 		events->tail_ticket_purchased = tail_job;
 	}
 	tail_job = NULL;
+	state->population = state->queue_count + state->server_count;
 	routing_ticket_purchased(events, time, rate);
 }
 

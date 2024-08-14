@@ -116,7 +116,7 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
             min->serverOffset = i;
             min->completionTime = completionTimes[i];
         }
-        if (index == 5)
+        if (index == 5 || index == 1)
             printf("completionTimes[%d] = %f\n", i, completionTimes[i]);
     }
 
@@ -216,12 +216,12 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     return get_smallest(times, DIM);
 }
 
-int get_total_busy_servers(int num_servers, int *server_list)
+int get_total_busy_servers(int num_servers, int *server_occupation)
 {
     int count = 0;
     for (int i = 0; i < num_servers; i++)
     {
-        if (server_list[i] != 0 && server_list[i] != -3)
+        if (server_occupation[i] != 0 /*&& server_list[i] != -3*/)
             count++;
     }
 

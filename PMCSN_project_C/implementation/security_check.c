@@ -33,12 +33,6 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 
 		time->last[3] = time->current;
 
-		if (events->user_arrival_to_security_check.user_arrival_time > STOP)
-		{
-			events->user_arrival_to_security_check.is_user_arrival_active = (double)INFINITY;
-			events->user_arrival_to_security_check.is_user_arrival_active = false;
-		}
-
 		int idle_offset = -1;
 		for (int i = 0; i < NUMBER_OF_SECURITY_CHECK_SERVERS; i++)
 		{

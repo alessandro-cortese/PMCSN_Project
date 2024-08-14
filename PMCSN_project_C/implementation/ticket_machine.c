@@ -23,8 +23,6 @@ double get_ticket_machine_departure(double start)
 
 void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	loss->index_user += 1;
-	state->population += 1;
 
 	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
@@ -37,65 +35,82 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;
 		printf("Stop arrival to ticket machine!\n");
 	}
-	// Search idle server
-	int idle_offset = -1;
-	for (int i = 0; i < NUMBER_OF_TICKET_MACHINE_SERVER; i++)
+	else
 	{
+		loss->index_user += 1;
 
-		if (state->server_occupation[i] == 0)
+		// Search idle server
+		int idle_offset = -1;
+		for (int i = 0; i < NUMBER_OF_TICKET_MACHINE_SERVER; i++)
 		{
-			idle_offset = i;
-			break;
-		}
-	}
 
-	if (Random() <= /*P_LEAVE_TICKET_STATION*/ 1.0)
-	{
-		struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
-		if (!abandon_job)
-		{
-			printf("Error in malloc in user arrival in ticket machine!\n");
-			exit(-1);
+			if (state->server_occupation[i] == 0)
+			{
+				idle_offset = i;
+				break;
+			}
 		}
-		abandon_job->id = loss->index_user;
-		printf("abandon job id is %d\n", abandon_job->id);
-		abandon_job->abandon_time = time->current;
-		printf("abandon time is %f\n", abandon_job->abandon_time);
-		// If is the first time that a job abandon the queue
-		if (events->head_ticket_machine == NULL)
+
+		if (Random() <= P_LEAVE_TICKET_STATION)
 		{
-			events->head_ticket_machine = abandon_job;
-			events->tail_ticket_machine = abandon_job;
-			abandon_job->prev = NULL;
-			abandon_job->next = NULL;
+			struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
+			if (!abandon_job)
+			{
+				printf("Error in malloc in user arrival in ticket machine!\n");
+				exit(-1);
+			}
+			abandon_job->id = loss->index_user;
+			printf("abandon job id is %d\n", abandon_job->id);
+			abandon_job->abandon_time = time->current;
+			printf("abandon time is %f\n", abandon_job->abandon_time);
+			// If is the first time that a job abandon the queue
+			if (events->head_ticket_machine == NULL)
+			{
+				events->head_ticket_machine = abandon_job;
+				events->tail_ticket_machine = abandon_job;
+				abandon_job->prev = NULL;
+				abandon_job->next = NULL;
+			}
+			else
+			{
+				events->tail_ticket_machine->next = abandon_job;
+				abandon_job->prev = events->tail_ticket_machine;
+				abandon_job->next = NULL;
+				events->tail_ticket_machine = abandon_job;
+			}
+
+			abandon_job = NULL;
 		}
 		else
 		{
-			events->tail_ticket_machine->next = abandon_job;
-			abandon_job->prev = events->tail_ticket_machine;
-			abandon_job->next = NULL;
-			events->tail_ticket_machine = abandon_job;
+			if (idle_offset >= 0)
+			{
+				// Set idle server to busy server and update departure time
+				state->server_occupation[idle_offset] = 1;
+				events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
+				// Prendo il job che sta in testa e lo processo
+				printf("events->completionTimes_ticket_machine[%d] = get_ticket_machine_departure(%f) = %f\n", idle_offset, time->current, events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current));
+				state->server_count += 1;
+			}
+			else if (idle_offset == -1)
+			{
+				state->queue_count += 1;
+			}
+			state->population = state->queue_count + state->server_count;
 		}
-
-		abandon_job = NULL;
-	}
-	else if (idle_offset >= 0)
-	{
-		// Set idle server to busy server and update departure time
-		state->server_occupation[idle_offset] = 1;
-		events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
-		// Prendo il job che sta in testa e lo processo
 	}
 }
 
 void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
-	state->population -= 1;
+	state->server_count -= 1;
 
-	if (state->population > 0)
+	if (state->queue_count > 0)
 	{
 		events->completionTimes_ticket_machine[server_offset] = get_ticket_machine_departure(time->current);
 		state->server_occupation[server_offset] = 0;
+		state->server_count += 1;
+		state->queue_count -= 1;
 	}
 	else
 	{
@@ -111,7 +126,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		exit(-1);
 	}
 	tail_job->id = loss->index_user;
-	tail_job->arrival_time = get_ticket_machine_departure(time->current);
+	tail_job->arrival_time = events->completionTimes_ticket_machine[server_offset];
 
 	if (events->head_ticket_purchased == NULL)
 	{
@@ -127,6 +142,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 		tail_job->next = NULL;
 		events->tail_ticket_purchased = tail_job;
 	}
+	state->population = state->queue_count + state->server_count;
 	tail_job = NULL;
 	routing_ticket_purchased(events, time, rate);
 }

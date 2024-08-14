@@ -120,7 +120,15 @@ void initializeStateVariables(int *m)
 	for (int j = 0; j < 5; j++)
 	{
 		state[j].population = 0;
+		state[j].queue_count = 0;
+		state[j].server_count = 0;
 		state[j].server_occupation = (int *)malloc(sizeof(int) * m[j]);
+		if (!state[j].server_occupation)
+		{
+			printf("Error in malloc in initializeStateVaribles!\n");
+			exit(-1);
+		}
+
 		for (int i = 0; i < m[j]; i++)
 		{
 			state[j].server_occupation[i] = 0; // 0 = IDLE, 1 = BUSY
