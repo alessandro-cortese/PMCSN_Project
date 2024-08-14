@@ -24,6 +24,8 @@ struct area areas[5];
 struct time *t;
 struct loss loss[5];
 
+int count_user = 0;
+
 double get_user_arrival_to_ticket_purchased(double arrival, double rate)
 {
 	SelectStream(15);
@@ -365,7 +367,7 @@ int main(int argc, char **argv)
 		}
 		else if (t->current == min_job_completion_ticket_gate)
 		{
-			printf("*** Evento : user_departure_ticket_gate ***\n");
+			printf("*** Evento user_departure_ticket_gate ***\n");
 			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
 

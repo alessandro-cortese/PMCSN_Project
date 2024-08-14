@@ -181,6 +181,5 @@ void abandon_ticket_office(struct event_list *events, struct states *state, stru
 
 		free(current);
 		loss->loss_user += 1;
-		state->population -= 1;
 	}
 }

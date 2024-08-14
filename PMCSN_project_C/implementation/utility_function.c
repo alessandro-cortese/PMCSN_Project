@@ -116,7 +116,7 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
             min->serverOffset = i;
             min->completionTime = completionTimes[i];
         }
-        if (index == 5 || index == 1)
+        if (index == 5)
             printf("completionTimes[%d] = %f\n", i, completionTimes[i]);
     }
 

@@ -26,6 +26,9 @@ double get_ticket_gate_departure(double start)
 
 void user_arrivals_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss)
 {
+
+	state->queue_count++;
+
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_TICKET_GATE_SERVERS; i++)
 	{
@@ -37,7 +40,6 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 	}
 
 	loss->index_user += 1;
-	state->population += 1;
 
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
@@ -50,7 +52,8 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 
 	if (idle_offset >= 0 && events->head_ticket_gate != NULL)
 	{
-
+		state->server_count++;
+		state->queue_count--;
 		tail_job = events->head_ticket_gate;
 		events->head_ticket_gate = events->head_ticket_gate->next;
 		tail_job->prev = NULL;
@@ -64,14 +67,22 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 		free(tail_job);
 	}
 
-	struct queue_node *head = (struct queue_node *)malloc(sizeof(struct queue_node));
+	state->population = state->queue_count + state->server_count;
+	printf("Evento di arrivo in ticket gate!\n");
+	printf("state->queue_count = %d\n", state->queue_count);
+	printf("state->server_count = %d\n", state->server_count);
 }
 void user_departure_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
-	if (state->population > 0 && events->head_ticket_gate != NULL)
-	{
-		state->population -= 1;
+	state->server_count--;
 
+	if (events->head_ticket_gate != NULL)
+		printf("events->head_ticket_gate->id = %d\n", events->head_ticket_gate->id);
+	else
+		printf("La coda del cristo è nulla\n");
+
+	if (state->queue_count > 0 && events->head_ticket_gate != NULL)
+	{
 		struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
 		if (!job)
 		{
@@ -83,16 +94,21 @@ void user_departure_ticket_gate(struct event_list *events, struct time *time, st
 		state->server_occupation[server_offset] = 1;
 		events->completionTimes_ticket_gate[server_offset] = get_ticket_gate_departure(time->current);
 		time->last[4] = time->current;
-
+		state->queue_count--;
+		state->server_count++;
 		events->head_ticket_gate = events->head_ticket_gate->next;
 		job->prev = NULL;
 		job->next = NULL;
 		free(job);
 	}
-	else if (state->population > 0 && events->head_ticket_gate == NULL)
+	else
 	{
-		state->population -= 1;
 		state->server_occupation[server_offset] = 0;
 		events->completionTimes_ticket_gate[server_offset] = (double)INFINITY;
 	}
+	state->population = state->queue_count + state->server_count;
+
+	printf("Evento di departure in ticket gate!\n");
+	printf("state->queue_count = %d\n", state->queue_count);
+	printf("state->server_count = %d\n", state->server_count);
 }

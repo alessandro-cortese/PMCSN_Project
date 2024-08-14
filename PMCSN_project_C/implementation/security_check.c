@@ -56,7 +56,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	else
 	{
 		// CASE 2: remove node from head_user_to_security_check and add to head_ticket_gate (skip)
-
+		printf("from security check go to ticket gate\n");
 		tail_job = events->head_user_to_security_check;
 		events->head_user_to_security_check = events->head_user_to_security_check->next;
 
@@ -65,35 +65,26 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 			events->head_ticket_gate = tail_job;
 			events->head_ticket_gate->prev = NULL;
 			events->head_ticket_gate->next = NULL;
-			events->head_ticket_gate = tail_job;
+			events->tail_ticket_gate = tail_job;
 		}
 		else if (events->head_ticket_gate != NULL)
 		{
-			events->head_ticket_gate->next = tail_job;
+			events->tail_ticket_gate->next = tail_job;
 			tail_job->prev = events->tail_ticket_gate;
 			tail_job->next = NULL;
 			events->tail_ticket_gate = tail_job;
 		}
+		routing_ticket_gate(events, time);
 	}
 }
 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
-	state->population -= 1;
-	busy_server -= 1;
-
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
-	if (state->population > 0)
-	{
-		events->completionTimes_security_check[server_offset] = get_security_check_departure(time->current);
-		state->server_occupation[server_offset] = 0;
-	}
-	else
-	{
-		events->completionTimes_security_check[server_offset] = (double)INFINITY;
-		state->server_occupation[server_offset] = 0;
-	}
+
+	events->completionTimes_security_check[server_offset] = (double)INFINITY;
+	state->server_occupation[server_offset] = 0;
 
 	// Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al ticket gate
 	struct queue_node *tail = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -131,4 +122,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		events->completionTimes_security_check[server_offset] = (double)INFINITY;
 		state->server_occupation[server_offset] = 0;
 	}
+	state->population -= 1;
+	busy_server -= 1;
+	printf("busy_server = %d\n", busy_server);
 }

@@ -24,6 +24,10 @@ double get_ticket_machine_departure(double start)
 void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
 
+	printf("Evento di arrivo in ticket machine!\n");
+	printf("state->queue_count = %d\n", state->queue_count);
+	printf("state->server_count = %d\n", state->server_count);
+
 	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
 
@@ -187,6 +191,5 @@ void abandon_ticket_machine(struct event_list *events, struct states *state, str
 
 		free(current);
 		loss->loss_user += 1;
-		state->population -= 1;
 	}
 }
