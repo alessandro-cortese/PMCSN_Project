@@ -107,7 +107,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		}
 		else if (events->head_ticket_gate != NULL)
 		{
-			events->head_ticket_gate->next = tail;
+			events->tail_ticket_gate->next = tail;
 			tail->prev = events->tail_ticket_gate;
 			tail->next = NULL;
 			events->tail_ticket_gate = tail;
