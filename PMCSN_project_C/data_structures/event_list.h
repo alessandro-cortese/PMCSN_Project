@@ -58,9 +58,12 @@ struct event_list
     struct queue_node *head_queue_customer_support;
     struct queue_node *tail_queue_customer_support;
 
-    // list of job to security check
+    // queue of job to security check (with probability)
     struct queue_node *head_user_to_security_check;
     struct queue_node *tail_user_to_security_check;
+    // queue of job to security check
+    struct queue_node *head_security_check_queue;
+    struct queue_node *tail_security_check_queue;
 
     // security_check
     struct user_arrival user_arrival_to_security_check;

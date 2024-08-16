@@ -22,6 +22,7 @@ struct event_list events;
 struct states state[5];
 struct area areas[5];
 struct time *t;
+double last_event;
 struct loss loss[5];
 
 int count_user = 0;
@@ -105,7 +106,6 @@ void initializeTime()
 		t->last[i] = 0.0;
 	}
 }
-
 void initializeArea()
 {
 
@@ -388,7 +388,9 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		sleep(1);
+		// sleep(1);
+
+		last_event = t->current;
 
 		puts("");
 		puts("");
@@ -397,6 +399,12 @@ int main(int argc, char **argv)
 	}
 
 	printf("Fine simulazione\n");
+
+	printf("last_event = %f\n", last_event);
+
+	verify(areas, loss, last_event);
+
+	printf("Dopo la verifica!\n");
 
 	return 0;
 }

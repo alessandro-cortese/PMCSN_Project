@@ -74,7 +74,16 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	}
 	else
 	{
-		state->population += 1;
+
+		if (idle_offset >= 0)
+		{
+			state->server_count++;
+		}
+		else
+		{
+			state->queue_count++;
+		}
+
 		if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
 		{
 			// delete from customer support queue
@@ -93,32 +102,13 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			tail_job = NULL;
 		}
 
-		// if (idle_offset == -1)
-		// {
-
-		// 	if (events->head_queue_customer_support == NULL)
-		// 	{
-		// 		events->head_queue_customer_support = tail_job;
-		// 		events->head_queue_customer_support->next = NULL;
-		// 		events->head_queue_customer_support->prev = NULL;
-		// 		events->tail_queue_customer_support = tail_job;
-		// 		tail_job = NULL;
-		// 	}
-		// 	else
-		// 	{
-		// 		events->tail_queue_customer_support->next = tail_job;
-		// 		tail_job->next = NULL;
-		// 		tail_job->prev = events->tail_queue_customer_support;
-		// 		events->tail_queue_customer_support = tail_job;
-		// 		tail_job = NULL;
-		// 	}
-		//}
+		state->population = state->queue_count + state->server_count;
 	}
 }
 
 void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
-
+	state->server_count--;
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
@@ -127,12 +117,14 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
-	if (state->population > 0)
+	if (state->queue_count > 0)
 	{
 		events->completionTimes_customer_support[server_offset] = get_customer_support_departure(time->current);
 		state->server_occupation[server_offset] = 0;
 		tail_job->id = processed_job_customer_support[server_offset];
 		tail_job->arrival_time = events->completionTimes_customer_support[server_offset];
+		state->queue_count--;
+		state->server_count++;
 	}
 	else
 	{
@@ -141,13 +133,12 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 
 	// feedback is here
-	if (Random() <= P_OF_CHANGE_TICKET && state->population > 0)
+	if (Random() <= P_OF_CHANGE_TICKET)
 	{
 		printf("Feedback event\n");
-		state->population -= 1;
 		feedback(events, time, rate);
 	}
-	else if (state->population > 0)
+	else
 	{
 		if (events->head_user_to_security_check == NULL)
 		{
@@ -164,9 +155,9 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 			events->tail_user_to_security_check = tail_job;
 		}
 		tail_job = NULL;
-		state->population -= 1;
 		routing_security_check(events, time, rate);
 	}
+	state->population = state->queue_count + state->server_count;
 }
 
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
