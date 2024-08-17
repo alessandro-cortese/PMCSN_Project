@@ -12,7 +12,7 @@
 #define NUMBER_OF_TICKET_OFFICE_SERVER 5
 
 // Number of servers of customer support service node
-#define NUMBER_OF_CUSTOMER_SUPPORT_SERVER 2
+#define NUMBER_OF_CUSTOMER_SUPPORT_SERVER 5
 
 // Number of servers of security check service node
 #define NUMBER_OF_SECURITY_CHECK_SERVERS 3
@@ -46,9 +46,9 @@
 
 // Service Rates [sec]
 #define SR_TICKET_STATION 90
-#define SR_TICKET_OFFICE_OPERATOR 240
-#define SR_CUSTOMER_SUPPORT_OPERATOR 450
-#define SR_SECURITY_CONTROL_OPERATOR 210
+#define SR_TICKET_OFFICE_OPERATOR 180
+#define SR_CUSTOMER_SUPPORT_OPERATOR 190
+#define SR_SECURITY_CONTROL_OPERATOR 150
 #define SR_TICKET_GATE_OPERATOR 45
 
 // Total number of queues
