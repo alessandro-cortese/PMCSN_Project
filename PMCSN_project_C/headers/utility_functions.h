@@ -9,4 +9,4 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
 void routing_security_check(struct event_list *events, struct time *time, double rate);
 void routing_ticket_gate(struct event_list *events, struct time *time);
 void feedback(struct event_list *events, struct time *time, double rate);
-void verify(struct area *area, struct loss *loss, double time);
+void verify(struct area *area, struct loss *loss, double time, struct time *t);

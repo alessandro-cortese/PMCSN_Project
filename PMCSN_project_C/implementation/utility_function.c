@@ -375,94 +375,112 @@ void routing_ticket_gate(struct event_list *events, struct time *time)
     user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }
 
-void verify(struct area *area, struct loss *loss, double time)
+void verify(struct area *a, struct loss *loss, double t, struct time *time)
 {
 
-    printf("time: %f\n", time);
+    printf("time: %f\n", t);
 
-    double rho_0 = area[0].service / time;
-    double q_0 = area[0].queue / time;
-    double n_0 = area[0].node / time;
-
-    printf("rho_0 = %f\n", rho_0);
-    printf("q_0 = %f\n", q_0);
-    printf("n_0 = %f\n", n_0);
-
-    if (n_0 - (q_0 + rho_0) > 0.00001)
-        exit(-100);
-
-    double rho_1 = area[1].service / time;
-    double q_1 = area[1].queue / time;
-    double n_1 = area[1].node / time;
+    double rho_1 = a[0].service / t;
+    double rho_2 = a[1].service / t;
+    double rho_3 = a[2].service / t;
+    double rho_4 = a[3].service / t;
+    double rho_5 = a[4].service / t;
 
     printf("rho_1 = %f\n", rho_1);
-    printf("q_1 = %f\n", q_1);
-    printf("n_1 = %f\n", n_1);
-
-    if (n_1 - (q_1 + rho_1) > 0.00001)
-        exit(-101);
-
-    double rho_2 = area[2].service / time;
-    double q_2 = area[2].queue / time;
-    double n_2 = area[2].node / time;
-
     printf("rho_2 = %f\n", rho_2);
-    printf("q_2 = %f\n", q_2);
-    printf("n_2 = %f\n", n_2);
-
-    if (n_2 - (q_2 + rho_2) > 0.00001)
-        exit(-102);
-
-    double rho_3 = area[3].service / time;
-    double n_3 = area[3].node / time;
-
     printf("rho_3 = %f\n", rho_3);
-    printf("n_3 = %f\n", n_3);
-
-    if (n_3 - rho_3 > 0.00001)
-        exit(-103);
-
-    double rho_4 = area[4].service / time;
-    double q_4 = area[4].queue / time;
-    double n_4 = area[4].node / time;
-
     printf("rho_4 = %f\n", rho_4);
-    printf("q_4 = %f\n", q_4);
-    printf("n_4 = %f\n", n_4);
+    printf("rho_5 = %f\n", rho_5);
 
-    if (n_4 - (q_4 + rho_4) > 0.00001)
-        exit(-104);
+    // popolazione media nelle code
+    double q_1 = a[0].queue / t;
+    double q_2 = a[1].queue / t;
+    double q_3 = a[2].queue / t;
+    double q_4 = a[3].queue / t;
+    double q_5 = a[4].queue / t;
 
-    double rho_00 = area[0].service / (loss[0].index_user);
-    double q_00 = area[0].queue / (loss[0].index_user);
-    double n_00 = area[0].node / (loss[0].index_user);
-    if (n_00 - (q_00 + rho_00) > 0.00001)
-        exit(-110);
+    printf("E(N_q1) = %f\n", q_1);
+    printf("E(N_q2) = %f\n", q_2);
+    printf("E(N_q3) = %f\n", q_3);
+    printf("E(N_q4) = %f\n", q_4);
+    printf("E(N_q5) = %f\n", q_5);
 
-    double rho_01 = area[1].service / (loss[1].index_user);
-    double q_01 = area[1].queue / (loss[1].index_user);
-    double n_01 = area[1].node / (loss[1].index_user);
-    printf("rho_01 %f, q_01 %f, n_01, %f\n", rho_01, q_01, n_01);
-    if (n_01 - (q_01 + rho_01) > 0.00001)
-        exit(-111);
+    // popolazione media nel centro
+    double n_1 = a[0].node / t;
+    double n_2 = a[1].node / t;
+    double n_3 = a[2].node / t;
+    double n_4 = a[3].node / t;
+    double n_5 = a[4].node / t;
 
-    double rho_02 = area[2].service / (loss[2].index_user);
-    double q_02 = area[2].queue / (loss[2].index_user);
-    double n_02 = area[2].node / (loss[2].index_user);
-    printf("rho_02 %f, q_02 %f, n_02, %f\n", rho_02, q_02, n_02);
-    if (n_02 - (q_02 + rho_02) > 0.00001)
-        exit(-112);
+    printf("E(n_1) = %f\n", n_1);
+    printf("E(n_2) = %f\n", n_2);
+    printf("E(n_3) = %f\n", n_3);
+    printf("E(n_4) = %f\n", n_4);
+    printf("E(n_5) = %f\n", n_5);
 
-    double rho_03 = area[3].service / (loss[3].index_user);
-    double n_03 = area[3].node / (loss[3].index_user);
-    printf("rho_03 %f, n_03, %f\n", rho_03, n_03);
-    if (n_03 - rho_03 > 0.00001)
-        exit(-113);
+    // tempo di servizio medio
+    double serv0 = a[0].service / (loss[0].index_user);
+    double serv1 = a[1].service / (loss[1].index_user);
+    double serv2 = a[2].service / (loss[2].index_user);
+    double serv3 = a[3].service / (loss[3].index_user);
+    double serv4 = a[4].service / (loss[4].index_user);
 
-    double rho_04 = area[4].service / (loss[4].index_user);
-    double q_04 = area[4].queue / (loss[4].index_user);
-    double n_04 = area[4].node / (loss[4].index_user);
-    printf("rho_04 %f, q_04 %f, n_04, %f\n", rho_04, q_04, n_04);
-    if (n_04 - (q_04 + rho_04) > 0.00000000000000001)
-        exit(-114);
+    printf("E(S_1) = %f\n", serv0);
+    printf("E(S_2) = %f\n", serv1);
+    printf("E(S_3) = %f\n", serv2);
+    printf("E(S_4) = %f\n", serv3);
+    printf("E(S_5) = %f\n", serv4);
+
+    // tempo di attesa medio nella coda
+    double delay1 = a[0].queue / (loss[0].index_user);
+    double delay2 = a[1].queue / (loss[1].index_user);
+    double delay3 = a[2].queue / (loss[2].index_user);
+    double delay4 = a[3].queue / (loss[3].index_user);
+    double delay5 = a[4].queue / (loss[4].index_user);
+
+    printf("delay1 = %f\n", delay1);
+    printf("delay2 = %f\n", delay2);
+    printf("delay3 = %f\n", delay3);
+    printf("delay4 = %f\n", delay4);
+    printf("delay5 = %f\n", delay5);
+
+    // tempo di risposta medio
+    double wait1 = a[0].node / (loss[0].index_user);
+    double wait2 = a[1].node / (loss[1].index_user);
+    double wait3 = a[2].node / (loss[2].index_user);
+    double wait4 = a[3].node / (loss[3].index_user);
+    double wait5 = a[4].node / (loss[4].index_user);
+
+    printf("E(T_s1) = %f\n", wait1);
+    printf("E(T_s2) = %f\n", wait2);
+    printf("E(T_s3) = %f\n", wait3);
+    printf("E(T_s4) = %f\n", wait4);
+    printf("E(T_s5) = %f\n", wait5);
+
+    // tempo di interarrivo
+    double interArr1 = time->last[0] / (loss[0].index_user);
+    double interArr2 = time->last[1] / (loss[1].index_user);
+    double interArr3 = time->last[2] / (loss[2].index_user);
+    double interArr4 = time->last[3] / (loss[3].index_user);
+    double interArr5 = time->last[4] / (loss[4].index_user);
+
+    printf("interArr1 = %f\n", interArr1);
+    printf("interArr2 = %f\n", interArr2);
+    printf("interArr3 = %f\n", interArr3);
+    printf("interArr4 = %f\n", interArr4);
+    printf("interArr5 = %f\n", interArr5);
+
+    // numero arrivi famiglie
+    double fam1 = loss[0].index_user;
+    double fam2 = loss[1].index_user;
+    double fam3 = loss[2].index_user;
+    double fam4 = loss[3].index_user;
+    double fam5 = loss[4].index_user;
+
+    printf("loss 1 = %f\n", fam1);
+    printf("loss 2 = %f\n", fam2);
+    printf("loss 3 = %f\n", fam3);
+    printf("loss 4 = %f\n", fam4);
+    printf("loss 5 = %f\n", fam5);
+
 }

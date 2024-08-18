@@ -166,6 +166,7 @@ void calcultate_area_struct(int *n)
 
 	int security_check_busy_servers = get_total_busy_servers(n[3], state[3].server_occupation);
 	areas[3].service += (t->next - t->current) * security_check_busy_servers;
+	areas[3].queue += (t->next - t->current) * (state[3].population);
 	areas[3].node += (t->next - t->current) * (state[3].population - security_check_busy_servers);
 
 	int ticket_gate_busy_servers = get_total_busy_servers(n[4], state[4].server_occupation);
@@ -388,7 +389,7 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		// sleep(1);
+		sleep(0.5);
 
 		last_event = t->current;
 
@@ -402,7 +403,7 @@ int main(int argc, char **argv)
 
 	printf("last_event = %f\n", last_event);
 
-	verify(areas, loss, last_event);
+	verify(areas, loss, last_event, t);
 
 	printf("Dopo la verifica!\n");
 
