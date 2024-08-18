@@ -233,7 +233,7 @@ void feedback(struct event_list *events, struct time *time, double rate)
 {
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
-    user_arrivals_ticket_office(events, time, &state[1], &loss[1], rate);
+    user_arrivals_ticket_office_feedback(events, time, &state[1], &loss[1], rate);
 }
 
 void routing_ticket_purchased(struct event_list *events, struct time *time, double rate)
@@ -482,5 +482,4 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     printf("loss 3 = %f\n", fam3);
     printf("loss 4 = %f\n", fam4);
     printf("loss 5 = %f\n", fam5);
-
 }

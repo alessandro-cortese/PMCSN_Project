@@ -389,7 +389,10 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		sleep(0.5);
+		//sleep(1);
+
+		if(t->next == (double)INFINITY)
+			exit(-1);
 
 		last_event = t->current;
 

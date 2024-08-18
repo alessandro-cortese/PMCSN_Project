@@ -38,7 +38,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			break;
 		}
 	}
-	if (Random() <= /*P_LEAVE_CUSTOMER_SUPPORT*/ 0.5)
+	if (Random() <= P_LEAVE_CUSTOMER_SUPPORT)
 	{
 		state->queue_count--;
 		printf("Abandon customer support!\n");
@@ -130,7 +130,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 
 	// feedback is here
-	if (Random() <= P_OF_CHANGE_TICKET)
+	if (Random() <= /*P_OF_CHANGE_TICKET*/ 0.0)
 	{
 		printf("Feedback event\n");
 		feedback(events, time, rate);

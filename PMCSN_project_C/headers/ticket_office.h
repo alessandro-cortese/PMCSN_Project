@@ -13,6 +13,7 @@
 
 double get_user_arrival_to_ticket_office(double arrival, double rate);
 double get_ticket_office_departure(double start);
+void user_arrivals_ticket_office_feedback(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
 // double get_abandon_ticket_office(double arrival);
 void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
 void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate);
