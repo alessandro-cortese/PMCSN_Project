@@ -151,28 +151,28 @@ void calcultate_area_struct(int *n)
 {
 	int ticket_machine_busy_servers = get_total_busy_servers(n[0], state[0].server_occupation);
 	areas[0].service += (t->next - t->current) * ticket_machine_busy_servers;
-	areas[0].queue += (t->next - t->current) * (state[0].population);
-	areas[0].node += (t->next - t->current) * (state[0].population - ticket_machine_busy_servers);
+	areas[0].queue += (t->next - t->current) * (state[0].queue_count);
+	areas[0].node += (t->next - t->current) * (state[0].queue_count + ticket_machine_busy_servers);
 
 	int ticket_office_busy_servers = get_total_busy_servers(n[1], state[1].server_occupation);
 	areas[1].service += (t->next - t->current) * ticket_office_busy_servers;
-	areas[1].queue += (t->next - t->current) * (state[1].population);
-	areas[1].node += (t->next - t->current) * (state[1].population - ticket_office_busy_servers);
+	areas[1].queue += (t->next - t->current) * (state[1].queue_count);
+	areas[1].node += (t->next - t->current) * (state[1].queue_count + ticket_office_busy_servers);
 
 	int customer_support_busy_servers = get_total_busy_servers(n[2], state[2].server_occupation);
 	areas[2].service += (t->next - t->current) * customer_support_busy_servers;
-	areas[2].queue += (t->next - t->current) * (state[2].population);
-	areas[2].node += (t->next - t->current) * (state[2].population - customer_support_busy_servers);
+	areas[2].queue += (t->next - t->current) * (state[2].queue_count);
+	areas[2].node += (t->next - t->current) * (state[2].queue_count + customer_support_busy_servers);
 
 	int security_check_busy_servers = get_total_busy_servers(n[3], state[3].server_occupation);
 	areas[3].service += (t->next - t->current) * security_check_busy_servers;
-	areas[3].queue += (t->next - t->current) * (state[3].population);
-	areas[3].node += (t->next - t->current) * (state[3].population - security_check_busy_servers);
+	areas[3].queue += (t->next - t->current) * (state[3].queue_count);
+	areas[3].node += (t->next - t->current) * (state[3].queue_count + security_check_busy_servers);
 
 	int ticket_gate_busy_servers = get_total_busy_servers(n[4], state[4].server_occupation);
 	areas[4].service += (t->next - t->current) * ticket_gate_busy_servers;
-	areas[4].queue += (t->next - t->current) * (state[4].population);
-	areas[4].node += (t->next - t->current) * (state[4].population - ticket_gate_busy_servers);
+	areas[4].queue += (t->next - t->current) * (state[4].queue_count);
+	areas[4].node += (t->next - t->current) * (state[4].queue_count + ticket_gate_busy_servers);
 }
 
 void append_user_arrival_ticket_purchased()
@@ -276,6 +276,11 @@ int main(int argc, char **argv)
 		printf("state[4].population = %d\n\n\n", state[4].population);
 
 		t->next = get_minimum_time(events, state, n);
+		if (t->next == t->current)
+		{
+			printf("Current time is equal to next time...\n");
+			exit(-1);
+		}
 		printf("t->current:%f\n", t->current);
 		printf("t->next: %f\n\n\n", t->next);
 		calcultate_area_struct(n);
@@ -372,13 +377,6 @@ int main(int argc, char **argv)
 			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
 		}
 
-		printf("\nPopolazione dopo l'evento\n");
-		printf("state[0].population = %d\n", state[0].population);
-		printf("state[1].population = %d\n", state[1].population);
-		printf("state[2].population = %d\n", state[2].population);
-		printf("state[3].population = %d\n", state[3].population);
-		printf("state[4].population = %d\n\n", state[4].population);
-
 		free(next_ticket_machine_abandon);
 		free(next_ticket_office_abandon);
 		free(next_customer_support_abandon);
@@ -389,16 +387,22 @@ int main(int argc, char **argv)
 		free(next_job_security_check);
 		free(next_job_ticket_gate);
 
-		//sleep(1);
+		// sleep(1);
 
-		if(t->next == (double)INFINITY)
+		if (t->next == (double)INFINITY)
+		{
+			printf("Something went wrong with simulation...\n");
 			exit(-1);
-
+		}
+		consistency_check_population();
 		last_event = t->current;
+		printf("Popolazione dopo dell'evento\n");
 
-		puts("");
-		puts("");
-		puts("");
+		printf("state[0].population = %d\n", state[0].population);
+		printf("state[1].population = %d\n", state[1].population);
+		printf("state[2].population = %d\n", state[2].population);
+		printf("state[3].population = %d\n", state[3].population);
+		printf("state[4].population = %d\n\n\n", state[4].population);
 		puts("");
 	}
 

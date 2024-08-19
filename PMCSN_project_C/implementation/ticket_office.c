@@ -22,9 +22,14 @@ double get_ticket_office_departure(double start)
 
 void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	printf("Evento di arrivo in ticket office!\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
+	// printf("Evento di arrivo in ticket office!\n");
+	// printf("state->queue_count = %d\n", state->queue_count);
+	// printf("state->server_count = %d\n", state->server_count);
+	if (state->server_count >= 6)
+	{
+		printf("Server count in ticket office is wrong\n");
+		exit(-1);
+	}
 	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
 
 	time->last[1] = time->current;
@@ -54,7 +59,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
 		}
 
-		if (Random() <= P_LEAVE_TICKET_OFFICE)
+		if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 0.0)
 		{
 			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 			if (!tail_job)
@@ -95,19 +100,18 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			}
 			else if (idle_offset == -1)
 			{
-				state->queue_count += +1;
+				state->queue_count += 1;
 			}
-			state->population = state->queue_count + state->server_count;
 		}
 	}
-
-	printf("Dopo evento di arrivo in ticket office!\n");
-	for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
-	{
-		printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
-	}
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
+	state->population = state->queue_count + state->server_count;
+	// printf("Dopo evento di arrivo in ticket office!\n");
+	// for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
+	//{
+	//	printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
+	// }
+	// printf("state->queue_count = %d\n", state->queue_count);
+	// printf("state->server_count = %d\n", state->server_count);
 }
 
 void user_arrivals_ticket_office_feedback(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
@@ -137,7 +141,7 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 	}
 
 	printf("idle_offset for ticket office %d\n", idle_offset);
-	if (Random() <= P_LEAVE_TICKET_OFFICE)
+	if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 0.0)
 	{
 		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 		if (!tail_job)
@@ -189,6 +193,13 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 
 void user_departure_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
 {
+	printf("Evento di departure in ticket office!\n");
+	printf("state->queue_count = %d\n", state->queue_count);
+	printf("state->server_count = %d\n", state->server_count);
+	for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
+	{
+		printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
+	}
 	state->server_count -= 1;
 
 	// If the population is bigger of 0 then update server completion time,
@@ -196,7 +207,7 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 	if (state->queue_count > 0)
 	{
 		events->completionTimes_ticket_office[server_offset] = get_ticket_office_departure(time->current);
-		state->server_occupation[server_offset] = 0;
+		state->server_occupation[server_offset] = 1;
 		state->server_count += 1;
 		state->queue_count -= 1;
 	}
@@ -231,6 +242,9 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 	}
 	tail_job = NULL;
 	state->population = state->queue_count + state->server_count;
+	printf("Dopo evento di departure in ticket office!\n");
+	printf("state->queue_count = %d\n", state->queue_count);
+	printf("state->server_count = %d\n", state->server_count);
 	routing_ticket_purchased(events, time, rate);
 }
 

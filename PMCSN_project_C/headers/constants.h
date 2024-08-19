@@ -1,5 +1,5 @@
 #define START 0.0
-#define STOP 15.0
+#define STOP 40000.0
 #define SEED 123456789
 
 // Dimension of array of time
@@ -21,7 +21,8 @@
 #define NUMBER_OF_TICKET_GATE_SERVERS 15
 
 // Arrival rate of traveller to the station [req/sec]
-#define LAMBDA1 0.129  // [05 - 08]
+//#define LAMBDA1 0.129  // [05 - 08] -->this would be [sec] cause it is intertime and not lambda
+#define LAMBDA1 7.75
 #define LAMBDA2 0.6309 // [08 - 19]
 #define LAMBDA3 0.211  // [19 - 24]
 

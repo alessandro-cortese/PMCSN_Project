@@ -10,3 +10,4 @@ void routing_security_check(struct event_list *events, struct time *time, double
 void routing_ticket_gate(struct event_list *events, struct time *time);
 void feedback(struct event_list *events, struct time *time, double rate);
 void verify(struct area *area, struct loss *loss, double time, struct time *t);
+void consistency_check_population();

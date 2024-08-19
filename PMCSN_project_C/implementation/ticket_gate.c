@@ -76,10 +76,10 @@ void user_departure_ticket_gate(struct event_list *events, struct time *time, st
 {
 	state->server_count--;
 
-	if (events->head_ticket_gate != NULL)
-		printf("events->head_ticket_gate->id = %d\n", events->head_ticket_gate->id);
-	else
-		printf("La coda del cristo è nulla\n");
+	//if (events->head_ticket_gate != NULL)
+	//	printf("events->head_ticket_gate->id = %d\n", events->head_ticket_gate->id);
+	//else
+	//	printf("La coda del cristo è nulla\n");
 
 	if (state->queue_count > 0 && events->head_ticket_gate != NULL)
 	{

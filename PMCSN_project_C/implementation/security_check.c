@@ -17,7 +17,7 @@ double get_security_check_departure(double start)
 void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
 
-	state->population += 1;
+	// state->population += 1;
 
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
@@ -40,9 +40,9 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		}
 	}
 
-	if (idle_offset >= 0 && events->head_security_check_queue != NULL)
+	if (idle_offset >= 0 &&  events->head_security_check_queue != NULL)
 	{
-
+		state->server_count++;
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
 
@@ -57,13 +57,19 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 
 		tail_job = NULL;
 	}
+	else if (idle_offset == -1)
+	{
+		state->queue_count++;
+	}
+	state->population = state->queue_count + state->server_count;
 }
 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
-
+	// state->population -= 1;
+	state->server_count--;
 	// Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al ticket gate
 	struct queue_node *tail = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail)
@@ -94,14 +100,16 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		}
 		tail = NULL;
 
-		if (events->head_security_check_queue != NULL)
+		if (state->queue_count > 0)
 		{
 			processed_job_security_check[server_offset] = events->head_security_check_queue->id;
 			state->server_occupation[server_offset] = 1;
 			events->completionTimes_security_check[server_offset] = get_security_check_departure(time->current);
 			events->head_security_check_queue = events->head_security_check_queue->next;
+			state->queue_count--;
+			state->server_count++;
 		}
-		else if (events->head_security_check_queue == NULL)
+		else
 		{
 			events->completionTimes_security_check[server_offset] = (double)INFINITY;
 			state->server_occupation[server_offset] = 0;
@@ -115,5 +123,5 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		events->completionTimes_security_check[server_offset] = (double)INFINITY;
 		state->server_occupation[server_offset] = 0;
 	}
-	state->population -= 1;
+	state->population = state->queue_count + state->server_count;
 }

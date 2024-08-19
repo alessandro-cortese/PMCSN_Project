@@ -117,8 +117,8 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
             min->serverOffset = i;
             min->completionTime = completionTimes[i];
         }
-        if (index == 5 || index == 3)
-            printf("completionTimes[%d] = %f\n", i, completionTimes[i]);
+        // if (index == 2)
+        //    printf("completionTimes[%d] = %f\n", i, completionTimes[i]);
     }
 
     return min;
@@ -199,10 +199,10 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     times[11] = events.user_arrival_to_customer_support.user_arrival_time;
     times[12] = events.user_arrival_to_ticket_gate.user_arrival_time;
 
-    for (int i = 0; i < DIM; i++)
-    {
-        printf("times[%d] = %f\n", i, times[i]);
-    }
+    // for (int i = 0; i < DIM; i++)
+    // {
+    //     printf("times[%d] = %f\n", i, times[i]);
+    // }
 
     free(abandon_ticket_machine);
     free(abandon_ticket_office);
@@ -374,6 +374,35 @@ void routing_ticket_gate(struct event_list *events, struct time *time)
     struct loss *loss = get_first_loss();
     user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }
+void consistency_check_population()
+{
+    struct states *state = get_first_state_address();
+    if (state[0].population < 0)
+    {
+        printf("Population for ticket machine is negative, exiting...\n");
+        exit(-1);
+    }
+    if (state[1].population < 0)
+    {
+        printf("Population for ticket office is negative, exiting...\n");
+        exit(-1);
+    }
+    if (state[2].population < 0)
+    {
+        printf("Population for customer support is negative, exiting...\n");
+        exit(-1);
+    }
+    if (state[3].population < 0)
+    {
+        printf("Population for security check is negative, exiting...\n");
+        exit(-1);
+    }
+    if (state[4].population < 0)
+    {
+        printf("Population for ticket gate is negative, exiting...\n");
+        exit(-1);
+    }
+}
 
 void verify(struct area *a, struct loss *loss, double t, struct time *time)
 {
@@ -381,6 +410,7 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     printf("time: %f\n", t);
 
     double rho_1 = a[0].service / t;
+    printf("a[0].service = %f\n", a[0].service);
     double rho_2 = a[1].service / t;
     double rho_3 = a[2].service / t;
     double rho_4 = a[3].service / t;

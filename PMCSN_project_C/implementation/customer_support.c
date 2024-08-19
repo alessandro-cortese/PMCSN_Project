@@ -17,7 +17,10 @@ double get_customer_support_departure(double start)
 
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	state->queue_count++;
+	//printf("Arrivo customer support\n");
+	//printf("state->queue_count = %d\n", state->queue_count);
+	//printf("state->server_count = %d\n", state->server_count);
+
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!tail_job)
 	{
@@ -38,10 +41,10 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			break;
 		}
 	}
-	if (Random() <= P_LEAVE_CUSTOMER_SUPPORT)
+
+	if (Random() <= /*P_LEAVE_CUSTOMER_SUPPORT*/ 0.0)
 	{
-		state->queue_count--;
-		printf("Abandon customer support!\n");
+		printf("Random choose abandon customer support!\n");
 		struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 		if (!abandon_job)
 		{
@@ -78,8 +81,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
 		{
 			state->server_count++;
-			state->queue_count--;
-			// delete from customer support queue
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
 
@@ -93,13 +94,14 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 			events->tail_queue_customer_support = tail_job;
 			time->last[2] = time->current;
 			tail_job = NULL;
+		}else if(idle_offset == -1){
+			state->queue_count++;
 		}
-
-		state->population = state->queue_count + state->server_count;
-		printf("Arrivo customer support\n");
-		printf("state->queue_count = %d\n", state->queue_count);
-		printf("state->server_count = %d\n", state->server_count);
 	}
+	state->population = state->queue_count + state->server_count;
+	//printf("Arrivo dopo customer support\n");
+	//printf("state->queue_count = %d\n", state->queue_count);
+	//printf("state->server_count = %d\n", state->server_count);
 }
 
 void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
@@ -113,10 +115,11 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
-	if (state->queue_count > 0 && events->head_queue_customer_support != NULL)
+	//printf("events->head_queue_customer_support->id %d\n", events->head_queue_customer_support->id);
+	if (state->queue_count > 0 )
 	{
 		events->completionTimes_customer_support[server_offset] = get_customer_support_departure(time->current);
-		state->server_occupation[server_offset] = 0;
+		state->server_occupation[server_offset] = 1;
 		tail_job->id = processed_job_customer_support[server_offset];
 		tail_job->arrival_time = events->completionTimes_customer_support[server_offset];
 		state->queue_count--;
@@ -155,16 +158,12 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 		routing_security_check(events, time, rate);
 	}
 	state->population = state->queue_count + state->server_count;
-	printf("Departure customer support!\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
 }
 
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
 	printf("Abandon customer support!\n");
 	struct abandon_node *current = events->head_customer_support;
-	printf("dopo\n");
 	while (current != NULL)
 	{
 		if (current->id == job_id)
