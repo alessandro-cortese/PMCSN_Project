@@ -9,14 +9,14 @@
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
-	SelectStream(2);
-	arrival += Exponential(rate / (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_STATION));
+	SelectStream(0);
+	arrival += Exponential(rate / P_TICKET_PURCHASED_FROM_TICKET_STATION);
 	return (arrival);
 }
 
 double get_ticket_machine_departure(double start)
 {
-	SelectStream(4);
+	SelectStream(1);
 	double departure = start + Exponential(SR_TICKET_STATION);
 	return departure;
 }
@@ -24,9 +24,9 @@ double get_ticket_machine_departure(double start)
 void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
 
-	//printf("Evento di arrivo in ticket machine!\n");
-	//printf("state->queue_count = %d\n", state->queue_count);
-	//printf("state->server_count = %d\n", state->server_count);
+	// printf("Evento di arrivo in ticket machine!\n");
+	// printf("state->queue_count = %d\n", state->queue_count);
+	// printf("state->server_count = %d\n", state->server_count);
 
 	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
@@ -41,6 +41,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	}
 	else
 	{
+
 		loss->index_user += 1;
 
 		// Search idle server
@@ -93,7 +94,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 				state->server_occupation[idle_offset] = 1;
 				events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
 				// Prendo il job che sta in testa e lo processo
-				//printf("events->completionTimes_ticket_machine[%d] = get_ticket_machine_departure(%f) = %f\n", idle_offset, time->current, events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current));
+				// printf("events->completionTimes_ticket_machine[%d] = get_ticket_machine_departure(%f) = %f\n", idle_offset, time->current, events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current));
 				state->server_count += 1;
 			}
 			else if (idle_offset == -1)

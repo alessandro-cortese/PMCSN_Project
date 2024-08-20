@@ -97,8 +97,9 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		}else if(idle_offset == -1){
 			state->queue_count++;
 		}
+		state->population = state->queue_count + state->server_count;
 	}
-	state->population = state->queue_count + state->server_count;
+	
 	//printf("Arrivo dopo customer support\n");
 	//printf("state->queue_count = %d\n", state->queue_count);
 	//printf("state->server_count = %d\n", state->server_count);

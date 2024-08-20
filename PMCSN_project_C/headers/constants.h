@@ -1,5 +1,5 @@
 #define START 0.0
-#define STOP 40000.0
+#define STOP 1000000.0
 #define SEED 123456789
 
 // Dimension of array of time
@@ -20,17 +20,15 @@
 // Number of servers of ticket gate service node
 #define NUMBER_OF_TICKET_GATE_SERVERS 15
 
-// Arrival rate of traveller to the station [req/sec]
-//#define LAMBDA1 0.129  // [05 - 08] -->this would be [sec] cause it is intertime and not lambda
-#define LAMBDA1 7.75
-#define LAMBDA2 0.6309 // [08 - 19]
-#define LAMBDA3 0.211  // [19 - 24]
+// Interarrival time [sec]
+#define ARRIVAL_1 7.751937 // [05 - 08]
+#define ARRIVAL_2 1.585037 // [08 - 19]
+#define ARRIVAL_3 4.739336 // [19 - 24]
 
 // Probability
 #define P_OF_TICKET_PURCHASED_ONLINE 0.6321
-#define P_TICKET_NOT_PURCHASED 0.3679
-#define P_TICKET_PURCHASED_FROM_TICKET_STATION 0.6
-#define P_TICKET_PURCHASED_FROM_TICKET_OFFICE 0.4
+#define P_TICKET_PURCHASED_FROM_TICKET_STATION 0.22074
+#define P_TICKET_PURCHASED_FROM_TICKET_OFFICE 0.14716
 #define P_OF_CUSTOMER_SUPPORT 0.15
 #define P_OF_NOT_CUSTOMER_SUPPORT 0.75
 #define P_OF_SECURITY_CHECK 0.10

@@ -117,8 +117,6 @@ struct next_job *get_min_queue_time(struct event_list events, int num_servers, i
             min->serverOffset = i;
             min->completionTime = completionTimes[i];
         }
-        // if (index == 2)
-        //    printf("completionTimes[%d] = %f\n", i, completionTimes[i]);
     }
 
     return min;
@@ -300,6 +298,8 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
             events->tail_user_to_security_check = job;
         }
         job = NULL;
+        printf("len ticket purchased %d\n", lenOfQueue(events->head_ticket_purchased));
+
         routing_security_check(events, time, rate);
     }
 }
@@ -315,7 +315,7 @@ void routing_security_check(struct event_list *events, struct time *time, double
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
         if (!job)
         {
-            printf("Error in malloc in routing security check to ticket gate!\n");
+            printf("Error in malloc in routing security check to security check!\n");
             exit(-1);
         }
 
@@ -341,6 +341,8 @@ void routing_security_check(struct event_list *events, struct time *time, double
     }
     else
     {
+
+        printf("prima, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
         if (!job)
         {
@@ -350,8 +352,10 @@ void routing_security_check(struct event_list *events, struct time *time, double
         job = events->head_user_to_security_check;
         events->head_user_to_security_check = events->head_user_to_security_check->next;
 
+        printf("job id is %d\n", job->id);
         if (events->head_ticket_gate == NULL)
         {
+            printf("Aggiunto in testa\n");
             events->head_ticket_gate = job;
             events->tail_ticket_gate = job;
             job->prev = NULL;
@@ -359,12 +363,16 @@ void routing_security_check(struct event_list *events, struct time *time, double
         }
         else
         {
+            printf("Aggiunto in coda\n");
             events->tail_ticket_gate->next = job;
             job->prev = events->tail_ticket_gate;
             job->next = NULL;
             events->tail_ticket_gate = job;
         }
+        if (events->head_ticket_gate == events->tail_ticket_gate)
+            printf("uguali\n");
         job = NULL;
+        printf("dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
     }
 }
@@ -409,12 +417,11 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
 
     printf("time: %f\n", t);
 
-    double rho_1 = a[0].service / t;
-    printf("a[0].service = %f\n", a[0].service);
-    double rho_2 = a[1].service / t;
-    double rho_3 = a[2].service / t;
-    double rho_4 = a[3].service / t;
-    double rho_5 = a[4].service / t;
+    double rho_1 = a[0].service / (t * NUMBER_OF_TICKET_MACHINE_SERVER);
+    double rho_2 = a[1].service / (t * NUMBER_OF_TICKET_OFFICE_SERVER);
+    double rho_3 = a[2].service / (t * NUMBER_OF_CUSTOMER_SUPPORT_SERVER);
+    double rho_4 = a[3].service / (t * NUMBER_OF_SECURITY_CHECK_SERVERS);
+    double rho_5 = a[4].service / (t * NUMBER_OF_TICKET_GATE_SERVERS);
 
     printf("rho_1 = %f\n", rho_1);
     printf("rho_2 = %f\n", rho_2);
@@ -467,12 +474,12 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double delay3 = a[2].queue / (loss[2].index_user);
     double delay4 = a[3].queue / (loss[3].index_user);
     double delay5 = a[4].queue / (loss[4].index_user);
-
-    printf("delay1 = %f\n", delay1);
-    printf("delay2 = %f\n", delay2);
-    printf("delay3 = %f\n", delay3);
-    printf("delay4 = %f\n", delay4);
-    printf("delay5 = %f\n", delay5);
+    printf("a[0].queue = %f\t loss[0].index_user %d\n", a[0].queue, loss[0].index_user);
+    printf("E(Tq_1) = %.6f\n", delay1);
+    printf("E(Tq_2) = %.6f\n", delay2);
+    printf("E(Tq_3) = %.6f\n", delay3);
+    printf("E(Tq_4) = %.6f\n", delay4);
+    printf("E(Tq_5) = %.6f\n", delay5);
 
     // tempo di risposta medio
     double wait1 = a[0].node / (loss[0].index_user);

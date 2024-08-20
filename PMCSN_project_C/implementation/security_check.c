@@ -77,7 +77,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		printf("Error in malloc in user departure in security check!\n");
 		exit(-1);
 	}
-	if (!(Random() <= P_LEAVE_SECURITY_CONTROL))
+	if (!(/*Random() <= P_LEAVE_SECURITY_CONTROL*/false))
 	{
 		tail->id = processed_job_security_check[server_offset];
 		tail->arrival_time = time->current;

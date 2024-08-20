@@ -9,7 +9,7 @@
 double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
 	SelectStream(3);
-	arrival += Exponential(rate / (P_TICKET_NOT_PURCHASED * P_TICKET_PURCHASED_FROM_TICKET_OFFICE));
+	arrival += Exponential(rate / P_TICKET_PURCHASED_FROM_TICKET_OFFICE);
 	return (arrival);
 }
 
@@ -102,9 +102,9 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			{
 				state->queue_count += 1;
 			}
+			state->population = state->queue_count + state->server_count;
 		}
 	}
-	state->population = state->queue_count + state->server_count;
 	// printf("Dopo evento di arrivo in ticket office!\n");
 	// for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
 	//{
