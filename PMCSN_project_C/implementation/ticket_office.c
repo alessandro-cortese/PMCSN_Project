@@ -20,6 +20,13 @@ double get_ticket_office_departure(double start)
 	return departure;
 }
 
+double get_abandon_ticket_office(double start)
+{
+	SelectStream(15);
+	double departure = start + Exponential(360);
+	return departure;
+}
+
 void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
 	// printf("Evento di arrivo in ticket office!\n");
@@ -59,7 +66,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
 		}
 
-		if (/*Random() <= /*P_LEAVE_TICKET_OFFICE*/ false)
+		if (get_random(2) <= P_LEAVE_TICKET_OFFICE)
 		{
 			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 			if (!tail_job)
@@ -69,7 +76,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			}
 			tail_job->id = loss->index_user;
 			printf("abandon job id is %d\n", tail_job->id);
-			tail_job->abandon_time = time->current;
+			tail_job->abandon_time = get_abandon_ticket_office(time->current);
 			printf("abandon time is %f\n", tail_job->abandon_time);
 
 			// If is the first time that a job abandon the queue
@@ -141,7 +148,7 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 	}
 
 	printf("idle_offset for ticket office %d\n", idle_offset);
-	if (/*Random() <= /*P_LEAVE_TICKET_OFFICE*/ false)
+	if (get_random(3) <= P_LEAVE_TICKET_OFFICE)
 	{
 		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 		if (!tail_job)
@@ -151,7 +158,7 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 		}
 		tail_job->id = loss->index_user;
 		printf("abandon job id is %d\n", tail_job->id);
-		tail_job->abandon_time = time->current;
+		tail_job->abandon_time = get_abandon_ticket_office(time->current);
 		printf("abandon time is %f\n", tail_job->abandon_time);
 
 		// If is the first time that a job abandon the queue

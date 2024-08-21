@@ -9,15 +9,22 @@
 
 double get_user_arrival_to_ticket_machine(double arrival, double rate)
 {
-	SelectStream(0);
+	SelectStream(4);
 	arrival += Exponential(rate / P_TICKET_PURCHASED_FROM_TICKET_STATION);
 	return (arrival);
 }
 
 double get_ticket_machine_departure(double start)
 {
-	SelectStream(1);
+	SelectStream(5);
 	double departure = start + Exponential(SR_TICKET_STATION);
+	return departure;
+}
+
+double get_abandon_ticket_machine(double start)
+{
+	SelectStream(16);
+	double departure = start + Exponential(360);
 	return departure;
 }
 
@@ -56,7 +63,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 			}
 		}
 
-		if (/*Random() <= /*P_LEAVE_TICKET_STATION*/ false)
+		if (get_random(6) <= P_LEAVE_TICKET_STATION)
 		{
 			struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 			if (!abandon_job)
@@ -66,7 +73,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 			}
 			abandon_job->id = loss->index_user;
 			printf("abandon job id is %d\n", abandon_job->id);
-			abandon_job->abandon_time = time->current;
+			abandon_job->abandon_time = get_abandon_ticket_machine(time->current);
 			printf("abandon time is %f\n", abandon_job->abandon_time);
 			// If is the first time that a job abandon the queue
 			if (events->head_ticket_machine == NULL)

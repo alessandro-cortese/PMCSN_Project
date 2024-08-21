@@ -10,8 +10,15 @@ int processed_job_customer_support[NUMBER_OF_CUSTOMER_SUPPORT_SERVER];
 
 double get_customer_support_departure(double start)
 {
-	SelectStream(1);
+	SelectStream(7);
 	double departure = start + Exponential(SR_CUSTOMER_SUPPORT_OPERATOR);
+	return departure;
+}
+
+double get_abandon_customer_support(double start)
+{
+	SelectStream(17);
+	double departure = start + Exponential(360);
 	return departure;
 }
 
@@ -42,10 +49,12 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		}
 	}
 
-	if (/*Random() <= /*P_LEAVE_CUSTOMER_SUPPORT*/ false)
+	if (get_random(8) <= P_LEAVE_CUSTOMER_SUPPORT)
 	{
+		printf("1.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// abandon is here
 		printf("Random choose abandon customer support!\n");
-		struct abandon_node *abandon_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
+		struct queue_node *abandon_job = (struct queue_node *)malloc(sizeof(struct queue_node));
 		if (!abandon_job)
 		{
 			printf("Error in malloc in user arrival in customer support!\n");
@@ -57,22 +66,33 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		events->head_queue_customer_support = tail_job->next;
 
 		abandon_job->id = loss->index_user;
-		abandon_job->abandon_time = time->current;
+		abandon_job->arrival_time = get_abandon_customer_support(time->current);
+
+		printf("2.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 
 		if (events->head_customer_support == NULL)
 		{
+			printf("4.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 			events->head_customer_support = abandon_job;
 			events->head_customer_support->prev = NULL;
 			events->head_customer_support->next = NULL;
+			printf("5.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 			events->tail_customer_support = abandon_job;
 		}
 		else if (events->head_customer_support != NULL)
 		{
+			printf("6.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 			events->tail_customer_support->next = abandon_job;
+			printf("8.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 			abandon_job->prev = events->tail_customer_support;
+			printf("9.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 			abandon_job->next = NULL;
+			printf("10.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 			events->tail_customer_support = abandon_job;
+			printf("7.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 		}
+
+		printf("3.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 		abandon_job = NULL;
 	}
 	else
@@ -136,7 +156,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 
 	// feedback is here
-	if (Random() <= /*P_OF_CHANGE_TICKET*/ 0.0)
+	if (get_random(9) <= P_OF_CHANGE_TICKET)
 	{
 		printf("Feedback event\n");
 		feedback(events, time, rate);

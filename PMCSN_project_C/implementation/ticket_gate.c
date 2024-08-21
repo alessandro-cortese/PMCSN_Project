@@ -19,7 +19,7 @@
 
 double get_ticket_gate_departure(double start)
 {
-	SelectStream(1);
+	SelectStream(12);
 	double departure = start + Exponential(SR_TICKET_GATE_OPERATOR);
 	return departure;
 }
@@ -53,11 +53,11 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 	if (idle_offset >= 0 && events->head_ticket_gate != NULL)
 	{
 		state->server_count++;
-		state->queue_count--;
 		tail_job = events->head_ticket_gate;
 		events->head_ticket_gate = events->head_ticket_gate->next;
 		tail_job->prev = NULL;
 		tail_job->next = NULL;
+		state->queue_count--;
 		// Set idle server to busy server and update departure time
 		state->server_occupation[idle_offset] = 1;
 
@@ -68,18 +68,10 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 	}
 
 	state->population = state->queue_count + state->server_count;
-	printf("Evento di arrivo in ticket gate!\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
 }
 void user_departure_ticket_gate(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
 	state->server_count--;
-
-	if (events->head_ticket_gate != NULL)
-		printf("events->head_ticket_gate->id = %d\n", events->head_ticket_gate->id);
-	else
-		printf("La coda del cristo è nulla\n");
 
 	if (state->queue_count > 0 && events->head_ticket_gate != NULL)
 	{
@@ -107,12 +99,4 @@ void user_departure_ticket_gate(struct event_list *events, struct time *time, st
 		events->completionTimes_ticket_gate[server_offset] = (double)INFINITY;
 	}
 	state->population = state->queue_count + state->server_count;
-
-	printf("Evento di departure in ticket gate!\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
-	if (state->server_count == 15 && state->queue_count > 0)
-	{
-		printf("Coda in ticket gate!\n");
-	}
 }

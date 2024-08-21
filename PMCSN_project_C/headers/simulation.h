@@ -6,6 +6,5 @@
 double get_user_arrival_to_ticket_purchased(double arrival, double rate);
 struct states *get_first_state_address();
 struct loss *get_first_loss();
-int lenOfQueue(struct queue_node *head_ticket_gate);
 
 #endif

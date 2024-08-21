@@ -1,4 +1,9 @@
+#ifndef UTILITY_FUNCTION_H
+#define UTILITY_FUNCTION_H
+
+double get_random(int index);
 double Exponential(double m);
+int lenOfQueue(struct queue_node *head);
 bool is_system_empty(struct states *state, int *n);
 struct next_abandon *get_min_abandon(struct abandon_node *head);
 struct next_job *get_min_queue_time(struct event_list events, int num_servers, int *server_occupation, int index);
@@ -11,3 +16,5 @@ void routing_ticket_gate(struct event_list *events, struct time *time);
 void feedback(struct event_list *events, struct time *time, double rate);
 void verify(struct area *area, struct loss *loss, double time, struct time *t);
 void consistency_check_population();
+
+#endif

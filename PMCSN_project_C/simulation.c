@@ -12,6 +12,7 @@
 #include "./headers/constants.h"
 #include "./headers/rngs.h"
 #include "./headers/utility_functions.h"
+#include "./headers/ticket_purchased.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -27,12 +28,6 @@ struct loss loss[5];
 
 int count_user = 0;
 
-double get_user_arrival_to_ticket_purchased(double arrival, double rate)
-{
-	SelectStream(0);
-	arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
-	return (arrival);
-}
 struct states *get_first_state_address()
 {
 	// Return the address of the first element in the array
@@ -175,60 +170,6 @@ void calcultate_area_struct(int *n)
 	areas[4].node += (t->next - t->current) * (state[4].queue_count + ticket_gate_busy_servers);
 }
 
-void append_user_arrival_ticket_purchased()
-{
-	events.user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(t->current, rate);
-	if (events.user_who_has_purchased_ticket.user_arrival_time > STOP)
-	{
-		events.user_who_has_purchased_ticket.user_arrival_time = (double)INFINITY;
-		events.user_who_has_purchased_ticket.is_user_arrival_active = false;
-		printf("Stop arrival to ticket purchased!\n");
-	}
-	else
-	{
-		struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
-		if (!tail_job)
-		{
-			printf("Error in malloc in append user arrival ticket purchased!\n");
-			exit(-1);
-		}
-		tail_job->id = loss->index_user;
-		tail_job->arrival_time = t->current;
-
-		if (events.head_ticket_purchased == NULL)
-		{
-			events.head_ticket_purchased = tail_job;
-			events.head_ticket_purchased->prev = NULL;
-			events.head_ticket_purchased->next = NULL;
-			events.tail_ticket_purchased = tail_job;
-		}
-		else if (events.head_ticket_purchased != NULL)
-		{
-			events.tail_ticket_purchased->next = tail_job;
-			tail_job->prev = events.tail_ticket_purchased;
-			tail_job->next = NULL;
-			events.tail_ticket_purchased = tail_job;
-		}
-
-		tail_job = NULL;
-		routing_ticket_purchased(&events, t, rate);
-	}
-}
-int lenOfQueue(struct queue_node *head_ticket_gate)
-{
-	int length = 0;
-	struct queue_node *current = head_ticket_gate;
-
-	// Traversing the linked list until the end
-	while (current != NULL)
-	{
-		length++;				 // Increment length for each node
-		current = current->next; // Move to the next node
-	}
-
-	return length;
-}
-
 int main(int argc, char **argv)
 {
 
@@ -291,6 +232,15 @@ int main(int argc, char **argv)
 		// printf("state[4].population = %d\n\n\n", state[4].population);
 
 		t->next = get_minimum_time(events, state, n);
+
+		printf("----------\n");
+		printf("t->current:%f\n", t->current);
+		printf("t->next: %f\n\n\n", t->next);
+		calcultate_area_struct(n);
+		printf("----------\n");
+
+		printf("Prima del controllo!\n");
+
 		if (t->next == t->current)
 		{
 			printf("Current time is equal to next time...\n");
@@ -325,7 +275,7 @@ int main(int argc, char **argv)
 		if (t->current == events.user_who_has_purchased_ticket.user_arrival_time)
 		{
 			printf("*** Evento append_user_arrival_ticket_purchased ***\n");
-			append_user_arrival_ticket_purchased();
+			append_user_arrival_ticket_purchased(&events, t, rate);
 		}
 		else if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
 		{
@@ -413,54 +363,60 @@ int main(int argc, char **argv)
 		}
 		consistency_check_population();
 		last_event = t->current;
-		// printf("Popolazione dopo dell'evento\n");
 
-		// printf("state[0].population = %d\n", state[0].population);
-		// printf("state[1].population = %d\n", state[1].population);
-		// printf("state[2].population = %d\n", state[2].population);
-		// printf("state[3].population = %d\n", state[3].population);
-		// printf("state[4].population = %d\n\n\n", state[4].population);
-		// puts("");
+		printf("Popolazione dopo dell'evento\n");
+		printf("state[0].population = %d\n", state[0].population);
+		printf("state[1].population = %d\n", state[1].population);
+		printf("state[2].population = %d\n", state[2].population);
+		printf("state[3].population = %d\n", state[3].population);
+		printf("state[4].population = %d\n\n\n", state[4].population);
+		printf("state[4].server_count = %d\n", state[4].server_count);
+		printf("state[4].queue_count = %d\n", state[4].queue_count);
+		printf("lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events.head_ticket_gate));
+		puts("");
 
-		// if (state[4].queue_count == 1 && state[4].server_count < 15)
-		// {
-		// 	struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-		// 	if (!job)
-		// 	{
-		// 		printf("Error in malloc in routing security check to ticket gate!\n");
-		// 		exit(-1);
-		// 	}
-		// 	job->id = 38762;
-		// 	if (events.head_ticket_gate == NULL)
-		// 	{
-		// 		events.head_ticket_gate = job;
-		// 		events.tail_ticket_gate = job;
-		// 		job->prev = NULL;
-		// 		job->next = NULL;
-		// 	}
-		// 	else if (events.tail_ticket_gate != NULL)
-		// 	{
-		// 		events.tail_ticket_gate->next = job;
-		// 		job->prev = events.tail_ticket_gate;
-		// 		job->next = NULL;
-		// 		events.tail_ticket_gate = job;
-		// 	}
-		// 	// sleep_condition++;
-		// 	// printf("sleep_condition %d\n", sleep_condition);
-		// }
-		// printf("(state[0].queue_count) is %d\n", (state[0].queue_count));
-		// printf("(t->next - t->current) is %f\n", t->next - t->current);
-		// printf("areas[0].queue is %f\n", areas[0].queue);
+		if (state[4].queue_count == 1 && state[4].server_count < 15)
+		{
+			struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+			if (!job)
+			{
+				printf("Error in malloc in routing security check to ticket gate!\n");
+				exit(-1);
+			}
+			// Aggiunta Fake...
+			// job->id = 38762;
+			// if (events.head_ticket_gate == NULL)
+			// {
+			// 	events.head_ticket_gate = job;
+			// 	events.tail_ticket_gate = job;
+			// 	job->prev = NULL;
+			// 	job->next = NULL;
+			// }
+			// else if (events.tail_ticket_gate != NULL)
+			// {
+			// 	events.tail_ticket_gate->next = job;
+			// 	job->prev = events.tail_ticket_gate;
+			// 	job->next = NULL;
+			// 	events.tail_ticket_gate = job;
+			// }
+			// sleep_condition++;
+			printf("CODA IMPOSSIBILE!\n");
+			exit(-1);
+		}
 
-		// if (state[4].queue_count != lenOfQueue(events.head_ticket_gate))
-		// {
-		// 	sleep_condition++;
-		// 	printf("LEN OF QUEUE %d\n", lenOfQueue(events.head_ticket_gate));
-		// }
+		if (state[4].queue_count != lenOfQueue(events.head_ticket_gate))
+		{
+			printf("Controllo\n");
+			sleep_condition++;
+			printf("LEN OF QUEUE %d\n", lenOfQueue(events.head_ticket_gate));
+			printf("state[4].queue_count = %d\n", state[4].queue_count);
+			exit(-1);
+		}
 		if (sleep_condition == 1)
 		{
 			do_sleep = 1;
 			printf("HEY NOW SLEEP\n");
+			exit(-1);
 		}
 		if (do_sleep == 1)
 		{

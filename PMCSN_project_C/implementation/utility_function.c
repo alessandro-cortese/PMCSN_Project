@@ -18,9 +18,31 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+double get_random(int index)
+{
+    double random;
+    SelectStream(index);
+    random = Random();
+    return random;
+}
+
 double Exponential(double m)
 {
     return (-m * log(1.0 - Random()));
+}
+int lenOfQueue(struct queue_node *head)
+{
+    int length = 0;
+    struct queue_node *current = head;
+
+    // Traversing the linked list until the end
+    while (current != NULL)
+    {
+        length++;                // Increment length for each node
+        current = current->next; // Move to the next node
+    }
+
+    return length;
 }
 
 bool is_system_empty(struct states *state, int *n)
@@ -197,10 +219,10 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     times[11] = events.user_arrival_to_customer_support.user_arrival_time;
     times[12] = events.user_arrival_to_ticket_gate.user_arrival_time;
 
-    // for (int i = 0; i < DIM; i++)
-    // {
-    //     printf("times[%d] = %f\n", i, times[i]);
-    // }
+    for (int i = 0; i < DIM; i++)
+    {
+        printf("times[%d] = %f\n", i, times[i]);
+    }
 
     free(abandon_ticket_machine);
     free(abandon_ticket_office);
@@ -239,9 +261,7 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
 
-    SelectStream(2);
-    double prob = Random();
-    if (prob <= P_OF_CUSTOMER_SUPPORT)
+    if (get_random(13) <= P_OF_CUSTOMER_SUPPORT)
     {
         printf("Route to customer support!\n");
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -311,9 +331,7 @@ void routing_security_check(struct event_list *events, struct time *time, double
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
 
-    SelectStream(2);
-    double prob = Random();
-    if (prob <= P_OF_SECURITY_CHECK)
+    if (get_random(14) <= P_OF_SECURITY_CHECK)
     {
         printf("Route to security check queue!\n");
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -367,25 +385,37 @@ void routing_security_check(struct event_list *events, struct time *time, double
         }
         else
         {
+            if (lenOfQueue(events->head_ticket_gate) == 1 && events->head_ticket_gate != events->tail_ticket_gate)
+            {
+                printf("DIO E LA MADONNA\n");
+                printf("events->head_ticket_gate sta a %p\n", events->head_ticket_gate);
+                printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
+            }
+            printf("prima dell'aggiunta in coda, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
             printf("Aggiunto in coda\n");
+            if (events->tail_ticket_gate == NULL)
+                printf("DIO\n");
             events->tail_ticket_gate->next = job;
+            printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
             job->prev = events->tail_ticket_gate;
-            job->next = NULL;
             events->tail_ticket_gate = job;
+            if (events->tail_ticket_gate->prev != NULL)
+                printf("MADONNA\n");
+            printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
+            printf("events->tail_ticket_gate->prev sta a %p\n", events->tail_ticket_gate->prev);
+            printf("dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         }
-        if (events->head_ticket_gate == events->tail_ticket_gate)
-            printf("uguali\n");
+        job->next = NULL;
         job = NULL;
-        printf("dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
+        printf("dopo-dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
     }
 }
 void routing_ticket_gate(struct event_list *events, struct time *time)
 {
-    printf("Dummy routing ticket gate!\n");
-    // struct states *state = get_first_state_address();
-    // struct loss *loss = get_first_loss();
-    // user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
+    struct states *state = get_first_state_address();
+    struct loss *loss = get_first_loss();
+    user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }
 void consistency_check_population()
 {
