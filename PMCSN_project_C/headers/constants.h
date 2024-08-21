@@ -1,5 +1,5 @@
 #define START 0.0
-#define STOP 1000000.0
+#define STOP 2000000.0
 #define SEED 123456789
 
 // Dimension of array of time

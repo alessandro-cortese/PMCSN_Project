@@ -19,7 +19,7 @@
 
 double get_ticket_gate_departure(double start)
 {
-	SelectStream(11);
+	SelectStream(1);
 	double departure = start + Exponential(SR_TICKET_GATE_OPERATOR);
 	return departure;
 }

@@ -9,7 +9,7 @@ int processed_job_security_check[NUMBER_OF_SECURITY_CHECK_SERVERS];
 
 double get_security_check_departure(double start)
 {
-	SelectStream(8);
+	SelectStream(1);
 	double departure = start + Exponential(SR_SECURITY_CONTROL_OPERATOR);
 	return departure;
 }

@@ -239,7 +239,9 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
 
-    if (Random() <= P_OF_CUSTOMER_SUPPORT)
+    SelectStream(2);
+    double prob = Random();
+    if (prob <= P_OF_CUSTOMER_SUPPORT)
     {
         printf("Route to customer support!\n");
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -309,7 +311,9 @@ void routing_security_check(struct event_list *events, struct time *time, double
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
 
-    if (Random() <= P_OF_SECURITY_CHECK)
+    SelectStream(2);
+    double prob = Random();
+    if (prob <= P_OF_SECURITY_CHECK)
     {
         printf("Route to security check queue!\n");
         struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -378,9 +382,10 @@ void routing_security_check(struct event_list *events, struct time *time, double
 }
 void routing_ticket_gate(struct event_list *events, struct time *time)
 {
-    struct states *state = get_first_state_address();
-    struct loss *loss = get_first_loss();
-    user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
+    printf("Dummy routing ticket gate!\n");
+    // struct states *state = get_first_state_address();
+    // struct loss *loss = get_first_loss();
+    // user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }
 void consistency_check_population()
 {
@@ -423,24 +428,12 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double rho_4 = a[3].service / (t * NUMBER_OF_SECURITY_CHECK_SERVERS);
     double rho_5 = a[4].service / (t * NUMBER_OF_TICKET_GATE_SERVERS);
 
-    printf("rho_1 = %f\n", rho_1);
-    printf("rho_2 = %f\n", rho_2);
-    printf("rho_3 = %f\n", rho_3);
-    printf("rho_4 = %f\n", rho_4);
-    printf("rho_5 = %f\n", rho_5);
-
     // popolazione media nelle code
     double q_1 = a[0].queue / t;
     double q_2 = a[1].queue / t;
     double q_3 = a[2].queue / t;
     double q_4 = a[3].queue / t;
     double q_5 = a[4].queue / t;
-
-    printf("E(N_q1) = %f\n", q_1);
-    printf("E(N_q2) = %f\n", q_2);
-    printf("E(N_q3) = %f\n", q_3);
-    printf("E(N_q4) = %f\n", q_4);
-    printf("E(N_q5) = %f\n", q_5);
 
     // popolazione media nel centro
     double n_1 = a[0].node / t;
@@ -449,12 +442,6 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double n_4 = a[3].node / t;
     double n_5 = a[4].node / t;
 
-    printf("E(n_1) = %f\n", n_1);
-    printf("E(n_2) = %f\n", n_2);
-    printf("E(n_3) = %f\n", n_3);
-    printf("E(n_4) = %f\n", n_4);
-    printf("E(n_5) = %f\n", n_5);
-
     // tempo di servizio medio
     double serv0 = a[0].service / (loss[0].index_user);
     double serv1 = a[1].service / (loss[1].index_user);
@@ -462,24 +449,12 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double serv3 = a[3].service / (loss[3].index_user);
     double serv4 = a[4].service / (loss[4].index_user);
 
-    printf("E(S_1) = %f\n", serv0);
-    printf("E(S_2) = %f\n", serv1);
-    printf("E(S_3) = %f\n", serv2);
-    printf("E(S_4) = %f\n", serv3);
-    printf("E(S_5) = %f\n", serv4);
-
     // tempo di attesa medio nella coda
     double delay1 = a[0].queue / (loss[0].index_user);
     double delay2 = a[1].queue / (loss[1].index_user);
     double delay3 = a[2].queue / (loss[2].index_user);
     double delay4 = a[3].queue / (loss[3].index_user);
     double delay5 = a[4].queue / (loss[4].index_user);
-    printf("a[0].queue = %f\t loss[0].index_user %d\n", a[0].queue, loss[0].index_user);
-    printf("E(Tq_1) = %.6f\n", delay1);
-    printf("E(Tq_2) = %.6f\n", delay2);
-    printf("E(Tq_3) = %.6f\n", delay3);
-    printf("E(Tq_4) = %.6f\n", delay4);
-    printf("E(Tq_5) = %.6f\n", delay5);
 
     // tempo di risposta medio
     double wait1 = a[0].node / (loss[0].index_user);
@@ -488,24 +463,12 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double wait4 = a[3].node / (loss[3].index_user);
     double wait5 = a[4].node / (loss[4].index_user);
 
-    printf("E(T_s1) = %f\n", wait1);
-    printf("E(T_s2) = %f\n", wait2);
-    printf("E(T_s3) = %f\n", wait3);
-    printf("E(T_s4) = %f\n", wait4);
-    printf("E(T_s5) = %f\n", wait5);
-
     // tempo di interarrivo
     double interArr1 = time->last[0] / (loss[0].index_user);
     double interArr2 = time->last[1] / (loss[1].index_user);
     double interArr3 = time->last[2] / (loss[2].index_user);
     double interArr4 = time->last[3] / (loss[3].index_user);
     double interArr5 = time->last[4] / (loss[4].index_user);
-
-    printf("interArr1 = %f\n", interArr1);
-    printf("interArr2 = %f\n", interArr2);
-    printf("interArr3 = %f\n", interArr3);
-    printf("interArr4 = %f\n", interArr4);
-    printf("interArr5 = %f\n", interArr5);
 
     // numero arrivi famiglie
     double fam1 = loss[0].index_user;
@@ -514,9 +477,53 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double fam4 = loss[3].index_user;
     double fam5 = loss[4].index_user;
 
+    printf("Ticket Machine\n");
+    printf("rho_1 = %f\n", rho_1);
+    printf("E(N_q1) = %f\n", q_1);
+    printf("E(n_1) = %f\n", n_1);
+    printf("E(S_1) = %f\n", serv0);
+    printf("E(Tq_1) = %.6f\n", delay1);
+    printf("E(T_s1) = %f\n", wait1);
+    printf("interArr1 = %f\n", interArr1);
     printf("loss 1 = %f\n", fam1);
+
+    printf("Ticket Office\n");
+    printf("rho_2 = %f\n", rho_2);
+    printf("E(N_q2) = %f\n", q_2);
+    printf("E(n_2) = %f\n", n_2);
+    printf("E(S_2) = %f\n", serv1);
+    printf("E(Tq_2) = %.6f\n", delay2);
+    printf("E(T_s2) = %f\n", wait2);
+    printf("interArr2 = %f\n", interArr2);
     printf("loss 2 = %f\n", fam2);
+
+    printf("Customer Support\n");
+    printf("rho_3 = %f\n", rho_3);
+    printf("E(N_q3) = %f\n", q_3);
+    printf("E(n_3) = %f\n", n_3);
+    printf("E(S_3) = %f\n", serv2);
+    printf("E(Tq_3) = %.6f\n", delay3);
+    printf("E(T_s3) = %f\n", wait3);
+    printf("interArr3 = %f\n", interArr3);
     printf("loss 3 = %f\n", fam3);
+
+    printf("Security Check\n");
+    printf("rho_4 = %f\n", rho_4);
+    printf("E(N_q4) = %f\n", q_4);
+    printf("E(n_4) = %f\n", n_4);
+    printf("E(S_4) = %f\n", serv3);
+    printf("E(Tq_4) = %.6f\n", delay4);
+    printf("E(T_s4) = %f\n", wait4);
+    printf("interArr4 = %f\n", interArr4);
     printf("loss 4 = %f\n", fam4);
+
+    printf("Ticket Gate\n");
+    printf("rho_5 = %f\n", rho_5);
+    printf("E(N_q5) = %f\n", q_5);
+    printf("E(n_5) = %f\n", n_5);
+    printf("E(S_5) = %f\n", serv4);
+    printf("E(Tq_5) = %.6f\n", delay5);
+    printf("E(T_s5) = %f\n", wait5);
+    printf("interArr5 = %f\n", interArr5);
     printf("loss 5 = %f\n", fam5);
 }

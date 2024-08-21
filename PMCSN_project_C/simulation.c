@@ -29,7 +29,7 @@ int count_user = 0;
 
 double get_user_arrival_to_ticket_purchased(double arrival, double rate)
 {
-	SelectStream(15);
+	SelectStream(0);
 	arrival += Exponential(rate / P_OF_TICKET_PURCHASED_ONLINE);
 	return (arrival);
 }
@@ -422,36 +422,36 @@ int main(int argc, char **argv)
 		// printf("state[4].population = %d\n\n\n", state[4].population);
 		// puts("");
 
-		if (state[4].queue_count == 1 && state[4].server_count < 15)
-		{
-			struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-			if (!job)
-			{
-				printf("Error in malloc in routing security check to ticket gate!\n");
-				exit(-1);
-			}
-			job->id = 38762;
-			if (events.head_ticket_gate == NULL)
-			{
-				events.head_ticket_gate = job;
-				events.tail_ticket_gate = job;
-				job->prev = NULL;
-				job->next = NULL;
-			}
-			else if (events.tail_ticket_gate != NULL)
-			{
-				events.tail_ticket_gate->next = job;
-				job->prev = events.tail_ticket_gate;
-				job->next = NULL;
-				events.tail_ticket_gate = job;
-			}
-			// sleep_condition++;
-			// printf("sleep_condition %d\n", sleep_condition);
-		}
+		// if (state[4].queue_count == 1 && state[4].server_count < 15)
+		// {
+		// 	struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+		// 	if (!job)
+		// 	{
+		// 		printf("Error in malloc in routing security check to ticket gate!\n");
+		// 		exit(-1);
+		// 	}
+		// 	job->id = 38762;
+		// 	if (events.head_ticket_gate == NULL)
+		// 	{
+		// 		events.head_ticket_gate = job;
+		// 		events.tail_ticket_gate = job;
+		// 		job->prev = NULL;
+		// 		job->next = NULL;
+		// 	}
+		// 	else if (events.tail_ticket_gate != NULL)
+		// 	{
+		// 		events.tail_ticket_gate->next = job;
+		// 		job->prev = events.tail_ticket_gate;
+		// 		job->next = NULL;
+		// 		events.tail_ticket_gate = job;
+		// 	}
+		// 	// sleep_condition++;
+		// 	// printf("sleep_condition %d\n", sleep_condition);
+		// }
 		// printf("(state[0].queue_count) is %d\n", (state[0].queue_count));
 		// printf("(t->next - t->current) is %f\n", t->next - t->current);
 		// printf("areas[0].queue is %f\n", areas[0].queue);
-		
+
 		// if (state[4].queue_count != lenOfQueue(events.head_ticket_gate))
 		// {
 		// 	sleep_condition++;

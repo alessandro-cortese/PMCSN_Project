@@ -8,14 +8,14 @@
 
 double get_user_arrival_to_ticket_office(double arrival, double rate)
 {
-	SelectStream(3);
+	SelectStream(0);
 	arrival += Exponential(rate / P_TICKET_PURCHASED_FROM_TICKET_OFFICE);
 	return (arrival);
 }
 
 double get_ticket_office_departure(double start)
 {
-	SelectStream(5);
+	SelectStream(1);
 	double departure = start + Exponential(SR_TICKET_OFFICE_OPERATOR);
 	return departure;
 }
@@ -59,7 +59,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
 		}
 
-		if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 0.0)
+		if (/*Random() <= /*P_LEAVE_TICKET_OFFICE*/ false)
 		{
 			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 			if (!tail_job)
@@ -141,7 +141,7 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 	}
 
 	printf("idle_offset for ticket office %d\n", idle_offset);
-	if (Random() <= /*P_LEAVE_TICKET_OFFICE*/ 0.0)
+	if (/*Random() <= /*P_LEAVE_TICKET_OFFICE*/ false)
 	{
 		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
 		if (!tail_job)
