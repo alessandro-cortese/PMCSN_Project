@@ -5,7 +5,7 @@ double get_random(int index);
 double Exponential(double m);
 int lenOfQueue(struct queue_node *head);
 bool is_system_empty(struct states *state, int *n);
-struct next_abandon *get_min_abandon(struct abandon_node *head);
+struct next_abandon *get_min_abandon(struct queue_node *head);
 struct next_job *get_min_queue_time(struct event_list events, int num_servers, int *server_occupation, int index);
 double get_smallest(double *values, int len);
 double get_minimum_time(struct event_list events, struct states *state, int *n);
@@ -15,6 +15,8 @@ void routing_security_check(struct event_list *events, struct time *time, double
 void routing_ticket_gate(struct event_list *events, struct time *time);
 void feedback(struct event_list *events, struct time *time, double rate);
 void verify(struct area *area, struct loss *loss, double time, struct time *t);
-void consistency_check_population();
-
+void consistency_check_population(struct event_list *events);
+void enqueue_node(struct queue_node **head, struct queue_node **tail, struct queue_node *job);
+void dequeue_node_free_node(struct queue_node **head);
+struct queue_node *dequeue_node(struct queue_node **head);
 #endif

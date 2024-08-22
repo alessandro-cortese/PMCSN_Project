@@ -28,13 +28,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	// printf("state->queue_count = %d\n", state->queue_count);
 	// printf("state->server_count = %d\n", state->server_count);
 
-	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
-	if (!tail_job)
-	{
-		printf("Error in malloc in user arrival in customer support!\n");
-		exit(-1);
-	}
-
 	loss->index_user += 1;
 
 	// events->user_arrival_to_customer_support.user_arrival_time = events->head_queue_customer_support->arrival_time;
@@ -54,66 +47,72 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		printf("1.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 		// abandon is here
 		printf("Random choose abandon customer support!\n");
-		struct queue_node *abandon_job = (struct queue_node *)malloc(sizeof(struct queue_node));
-		if (!abandon_job)
-		{
-			printf("Error in malloc in user arrival in customer support!\n");
-			exit(-1);
-		}
+		struct queue_node *abandon_job;
+		// if (!abandon_job)
+		// {
+		// 	printf("Error in malloc in user arrival in customer support!\n");
+		// 	exit(-1);
+		// }
 
-		// CASE 2: delete a node from head_ticket_purchased and add to abandon customer support queue
-		abandon_job = (struct abandon_node *)events->head_queue_customer_support;
-		events->head_queue_customer_support = tail_job->next;
+		// // CASE 2: delete a node from head_ticket_purchased and add to abandon customer support queue
+		// abandon_job = events->head_queue_customer_support;
+		// events->head_queue_customer_support = events->head_queue_customer_support->next;
+
+		abandon_job = dequeue_node(&events->head_queue_customer_support);
 
 		abandon_job->id = loss->index_user;
 		abandon_job->arrival_time = get_abandon_customer_support(time->current);
 
 		printf("2.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 
-		if (events->head_customer_support == NULL)
-		{
-			printf("4.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-			events->head_customer_support = abandon_job;
-			events->head_customer_support->prev = NULL;
-			events->head_customer_support->next = NULL;
-			printf("5.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-			events->tail_customer_support = abandon_job;
-		}
-		else if (events->head_customer_support != NULL)
-		{
-			printf("6.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-			events->tail_customer_support->next = abandon_job;
-			printf("8.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-			abandon_job->prev = events->tail_customer_support;
-			printf("9.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-			abandon_job->next = NULL;
-			printf("10.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-			events->tail_customer_support = abandon_job;
-			printf("7.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		}
-
+		// if (events->head_customer_support == NULL)
+		// {
+		// 	printf("4.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// 	events->head_customer_support = abandon_job;
+		// 	events->head_customer_support->prev = NULL;
+		// 	events->head_customer_support->next = NULL;
+		// 	printf("5.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// 	events->tail_customer_support = abandon_job;
+		// }
+		// else if (events->head_customer_support != NULL)
+		// {
+		// 	printf("6.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// 	events->tail_customer_support->next = abandon_job;
+		// 	printf("8.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// 	abandon_job->prev = events->tail_customer_support;
+		// 	printf("9.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// 	abandon_job->next = NULL;
+		// 	printf("10.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		// 	events->tail_customer_support = abandon_job;
+		// 	printf("7.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
+		//}
+		enqueue_node(&events->head_customer_support, &events->tail_customer_support, abandon_job);
 		printf("3.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		abandon_job = NULL;
 	}
 	else
 	{
 		printf("idle offset for customer support is %d\n", idle_offset);
 		if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
 		{
+			/*
+			Caso in cui la coda non è vuota e si è liberato un server, quindi
+			mandiamo il primo della coda in servizio e spostiamo il puntatore
+			della testa al prossimo nodo e liberiamo memoria.
+			*/
+
 			state->server_count++;
 			state->server_occupation[idle_offset] = 1;
 			events->completionTimes_customer_support[idle_offset] = get_customer_support_departure(time->current);
 
-			processed_job_customer_support[idle_offset] = events->head_queue_customer_support->id;
-			events->head_queue_customer_support = events->head_queue_customer_support->next;
+			dequeue_node_free_node(&events->head_queue_customer_support);
 
-			tail_job->id = loss->index_user;
-			events->tail_queue_customer_support->next = tail_job;
-			tail_job->prev = events->tail_queue_customer_support;
-			tail_job->next = NULL;
-			events->tail_queue_customer_support = tail_job;
+			/*
+			Aggiorniamo i dati relativi al nodo che è stato appena messo in
+			coda
+			*/
+
+			events->tail_queue_customer_support->id = loss->index_user;
 			time->last[2] = time->current;
-			tail_job = NULL;
 		}
 		else if (idle_offset == -1)
 		{
@@ -136,21 +135,37 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 		printf("Error in malloc in user departure in customer support!\n");
 		exit(-1);
 	}
-	// If the population is bigger of 0 then update server completion time,
-	// otherwise reset data of the server.
-	// printf("events->head_queue_customer_support->id %d\n", events->head_queue_customer_support->id);
+
+	/*
+	Mi prendo i dati del job che ha appena terminato il servizio.
+	*/
+
+	time->last[2] = time->current;
+	tail_job->id = processed_job_customer_support[server_offset];
+	tail_job->arrival_time = events->completionTimes_customer_support[server_offset];
+
 	if (state->queue_count > 0)
 	{
+		/*
+		Il job in servizio viene messo o in coda al prossimo centro oppure viene mandato
+		in ticket office per via del feedback. Se c'è un job in coda, assegno questo job
+		al servente che si è appena liberato e libero memoria dalla coda dei job di
+		customer support.
+		*/
+
 		events->completionTimes_customer_support[server_offset] = get_customer_support_departure(time->current);
 		state->server_occupation[server_offset] = 1;
-		tail_job->id = processed_job_customer_support[server_offset];
-		tail_job->arrival_time = events->completionTimes_customer_support[server_offset];
+		dequeue_node_free_node(&events->head_queue_customer_support);
 		state->queue_count--;
 		state->server_count++;
-		time->last[2] = time->current;
 	}
 	else
 	{
+		/*
+		Il servente ha terminato la sua esecuzione e resettiamo il suo stato perché non
+		c'è più nessun altro job da processare.
+		*/
+
 		events->completionTimes_customer_support[server_offset] = (double)INFINITY;
 		state->server_occupation[server_offset] = 0;
 	}
@@ -159,25 +174,31 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	if (get_random(9) <= P_OF_CHANGE_TICKET)
 	{
 		printf("Feedback event\n");
+		/*
+		Se il job fa il feedback, libero memoria perché i primi due centri non tangono
+		conto dei dati dei job che arrivato.
+		*/
+		free(tail_job);
 		feedback(events, time, rate);
 	}
 	else
 	{
-		if (events->head_user_to_security_check == NULL)
-		{
-			events->head_user_to_security_check = tail_job;
-			events->tail_user_to_security_check = tail_job;
-			tail_job->prev = NULL;
-			tail_job->next = NULL;
-		}
-		else
-		{
-			events->tail_user_to_security_check->next = tail_job;
-			tail_job->prev = events->tail_user_to_security_check;
-			tail_job->next = NULL;
-			events->tail_user_to_security_check = tail_job;
-		}
-		tail_job = NULL;
+		// if (events->head_user_to_security_check == NULL)
+		// {
+		// 	events->head_user_to_security_check = tail_job;
+		// 	events->tail_user_to_security_check = tail_job;
+		// 	tail_job->prev = NULL;
+		// 	tail_job->next = NULL;
+		// }
+		// else
+		// {
+		// 	events->tail_user_to_security_check->next = tail_job;
+		// 	tail_job->prev = events->tail_user_to_security_check;
+		// 	tail_job->next = NULL;
+		// 	events->tail_user_to_security_check = tail_job;
+		// }
+		// tail_job = NULL;
+		enqueue_node(&events->head_user_to_security_check, &events->tail_user_to_security_check, tail_job);
 		routing_security_check(events, time, rate);
 	}
 	state->population = state->queue_count + state->server_count;
@@ -186,7 +207,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
 	printf("Abandon customer support!\n");
-	struct abandon_node *current = events->head_customer_support;
+	struct queue_node *current = events->head_customer_support;
 	while (current != NULL)
 	{
 		if (current->id == job_id)
@@ -194,8 +215,8 @@ void abandon_customer_support(struct event_list *events, struct states *state, s
 		current = current->next;
 	}
 
-	struct abandon_node *prev = current->prev;
-	struct abandon_node *next = current->next;
+	struct queue_node *prev = current->prev;
+	struct queue_node *next = current->next;
 
 	if (prev != NULL)
 	{

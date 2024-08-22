@@ -11,14 +11,6 @@ struct queue_node
     struct queue_node *next;
 };
 
-struct abandon_node
-{
-    int id;
-    double abandon_time;
-    struct abandon_node *prev;
-    struct abandon_node *next;
-};
-
 struct user_arrival
 {
     double user_arrival_time;
@@ -34,15 +26,15 @@ struct event_list
     struct user_arrival user_arrival_to_ticket_machine;
     double *completionTimes_ticket_machine;
     // abandon queue ticket machine
-    struct abandon_node *head_ticket_machine;
-    struct abandon_node *tail_ticket_machine;
+    struct queue_node *head_ticket_machine;
+    struct queue_node *tail_ticket_machine;
 
     // ticket office
     struct user_arrival user_arrival_to_ticket_office;
     double *completionTimes_ticket_office;
     // abandon queue ticket office
-    struct abandon_node *head_ticket_office;
-    struct abandon_node *tail_ticket_office;
+    struct queue_node *head_ticket_office;
+    struct queue_node *tail_ticket_office;
 
     // list of job ticket machine + ticket office
     struct queue_node *head_ticket_purchased;
@@ -52,8 +44,8 @@ struct event_list
     struct user_arrival user_arrival_to_customer_support;
     double *completionTimes_customer_support;
     // abandon queue customer support
-    struct abandon_node *head_customer_support;
-    struct abandon_node *tail_customer_support;
+    struct queue_node *head_customer_support;
+    struct queue_node *tail_customer_support;
     // queue of job in customer support
     struct queue_node *head_queue_customer_support;
     struct queue_node *tail_queue_customer_support;

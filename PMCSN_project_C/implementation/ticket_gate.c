@@ -40,31 +40,16 @@ void user_arrivals_ticket_gate(struct event_list *events, struct time *time, str
 	}
 
 	loss->index_user += 1;
-
-	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
-	if (!tail_job)
-	{
-		printf("Error in malloc in user arrival in ticket gate!\n");
-		exit(-1);
-	}
-
-	tail_job->id = loss->index_user;
+	time->last[4] = time->current;
 
 	if (idle_offset >= 0 && events->head_ticket_gate != NULL)
 	{
 		state->server_count++;
-		tail_job = events->head_ticket_gate;
-		events->head_ticket_gate = events->head_ticket_gate->next;
-		tail_job->prev = NULL;
-		tail_job->next = NULL;
+		dequeue_node(&events->head_ticket_gate);
 		state->queue_count--;
 		// Set idle server to busy server and update departure time
 		state->server_occupation[idle_offset] = 1;
-
 		events->completionTimes_ticket_gate[idle_offset] = get_ticket_gate_departure(time->current);
-		time->last[4] = time->current;
-
-		free(tail_job);
 	}
 
 	state->population = state->queue_count + state->server_count;
@@ -75,23 +60,12 @@ void user_departure_ticket_gate(struct event_list *events, struct time *time, st
 
 	if (state->queue_count > 0 && events->head_ticket_gate != NULL)
 	{
-		struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-		if (!job)
-		{
-			printf("Error in malloc in user departure ticket gate!\n");
-			exit(-1);
-		}
 
-		job = events->head_ticket_gate;
 		state->server_occupation[server_offset] = 1;
 		events->completionTimes_ticket_gate[server_offset] = get_ticket_gate_departure(time->current);
-		time->last[4] = time->current;
 		state->queue_count--;
 		state->server_count++;
-		events->head_ticket_gate = events->head_ticket_gate->next;
-		job->prev = NULL;
-		job->next = NULL;
-		free(job);
+		dequeue_node_free_node(&events->head_ticket_gate);
 	}
 	else
 	{

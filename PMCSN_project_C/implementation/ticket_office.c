@@ -68,33 +68,34 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 
 		if (get_random(2) <= P_LEAVE_TICKET_OFFICE)
 		{
-			struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
-			if (!tail_job)
+			struct queue_node *abandon_node = (struct queue_node *)malloc(sizeof(struct queue_node));
+			if (!abandon_node)
 			{
 				printf("Error in malloc in user arrival in ticket office!\n");
 				exit(-1);
 			}
-			tail_job->id = loss->index_user;
-			printf("abandon job id is %d\n", tail_job->id);
-			tail_job->abandon_time = get_abandon_ticket_office(time->current);
-			printf("abandon time is %f\n", tail_job->abandon_time);
+			abandon_node->id = loss->index_user;
+			printf("abandon job id is %f\n", abandon_node->arrival_time);
+			abandon_node->arrival_time = get_abandon_ticket_office(time->current);
+			printf("abandon time is %f\n", abandon_node->arrival_time);
 
 			// If is the first time that a job abandon the queue
-			if (events->head_ticket_office == NULL)
-			{
-				events->head_ticket_office = tail_job;
-				events->tail_ticket_office = tail_job;
-				tail_job->prev = NULL;
-				tail_job->next = NULL;
-			}
-			else
-			{
-				events->tail_ticket_office->next = tail_job;
-				tail_job->prev = events->tail_ticket_office;
-				tail_job->next = NULL;
-				events->tail_ticket_office = tail_job;
-			}
-			tail_job = NULL;
+			// if (events->head_ticket_office == NULL)
+			// {
+			// 	events->head_ticket_office = tail_job;
+			// 	events->tail_ticket_office = tail_job;
+			// 	tail_job->prev = NULL;
+			// 	tail_job->next = NULL;
+			// }
+			// else
+			// {
+			// 	events->tail_ticket_office->next = tail_job;
+			// 	tail_job->prev = events->tail_ticket_office;
+			// 	tail_job->next = NULL;
+			// 	events->tail_ticket_office = tail_job;
+			// }
+			// tail_job = NULL;
+			enqueue_node(&events->head_ticket_office, &events->tail_ticket_office, abandon_node);
 		}
 		else
 		{
@@ -150,33 +151,34 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 	printf("idle_offset for ticket office %d\n", idle_offset);
 	if (get_random(3) <= P_LEAVE_TICKET_OFFICE)
 	{
-		struct abandon_node *tail_job = (struct abandon_node *)malloc(sizeof(struct abandon_node));
-		if (!tail_job)
+		struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+		if (!job)
 		{
 			printf("Error in malloc in user arrival in ticket office!\n");
 			exit(-1);
 		}
-		tail_job->id = loss->index_user;
-		printf("abandon job id is %d\n", tail_job->id);
-		tail_job->abandon_time = get_abandon_ticket_office(time->current);
-		printf("abandon time is %f\n", tail_job->abandon_time);
+		job->id = loss->index_user;
+		printf("abandon job id is %d\n", job->id);
+		job->arrival_time = get_abandon_ticket_office(time->current);
+		printf("abandon time is %f\n", job->arrival_time);
 
 		// If is the first time that a job abandon the queue
-		if (events->head_ticket_office == NULL)
-		{
-			events->head_ticket_office = tail_job;
-			events->tail_ticket_office = tail_job;
-			tail_job->prev = NULL;
-			tail_job->next = NULL;
-		}
-		else
-		{
-			events->tail_ticket_office->next = tail_job;
-			tail_job->prev = events->tail_ticket_office;
-			tail_job->next = NULL;
-			events->tail_ticket_office = tail_job;
-		}
-		tail_job = NULL;
+		// if (events->head_ticket_office == NULL)
+		// {
+		// 	events->head_ticket_office = job;
+		// 	events->tail_ticket_office = job;
+		// 	tail_job->prev = NULL;
+		// 	tail_job->next = NULL;
+		// }
+		// else
+		// {
+		// 	events->tail_ticket_office->next = tail_job;
+		// 	tail_job->prev = events->tail_ticket_office;
+		// 	tail_job->next = NULL;
+		// 	events->tail_ticket_office = tail_job;
+		// }
+		// tail_job = NULL;
+		enqueue_node(&events->head_ticket_office, &events->tail_ticket_office, job);
 	}
 	else
 	{
@@ -233,21 +235,22 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 	tail_job->id = loss->index_user;
 	tail_job->arrival_time = time->current;
 
-	if (events->head_ticket_purchased == NULL)
-	{
-		events->head_ticket_purchased = tail_job;
-		events->head_ticket_purchased->prev = NULL;
-		events->head_ticket_purchased->next = NULL;
-		events->tail_ticket_purchased = tail_job;
-	}
-	else if (events->head_ticket_purchased != NULL)
-	{
-		events->tail_ticket_purchased->next = tail_job;
-		tail_job->prev = events->tail_ticket_purchased;
-		tail_job->next = NULL;
-		events->tail_ticket_purchased = tail_job;
-	}
-	tail_job = NULL;
+	// if (events->head_ticket_purchased == NULL)
+	// {
+	// 	events->head_ticket_purchased = tail_job;
+	// 	events->head_ticket_purchased->prev = NULL;
+	// 	events->head_ticket_purchased->next = NULL;
+	// 	events->tail_ticket_purchased = tail_job;
+	// }
+	// else if (events->head_ticket_purchased != NULL)
+	// {
+	// 	events->tail_ticket_purchased->next = tail_job;
+	// 	tail_job->prev = events->tail_ticket_purchased;
+	// 	tail_job->next = NULL;
+	// 	events->tail_ticket_purchased = tail_job;
+	// }
+	// tail_job = NULL;
+	enqueue_node(&events->head_ticket_purchased, &events->tail_ticket_purchased, tail_job);
 	state->population = state->queue_count + state->server_count;
 	printf("Dopo evento di departure in ticket office!\n");
 	printf("state->queue_count = %d\n", state->queue_count);
@@ -260,7 +263,7 @@ void abandon_ticket_office(struct event_list *events, struct states *state, stru
 	printf("Abandon ticket office!\n");
 	if (events->head_ticket_office != NULL)
 	{
-		struct abandon_node *current = events->head_ticket_office;
+		struct queue_node *current = events->head_ticket_office;
 		while (current != NULL)
 		{
 			if (current->id == job_id)
@@ -271,8 +274,8 @@ void abandon_ticket_office(struct event_list *events, struct states *state, stru
 			current = current->next;
 		}
 
-		struct abandon_node *prev = current->prev;
-		struct abandon_node *next = current->next;
+		struct queue_node *prev = current->prev;
+		struct queue_node *next = current->next;
 
 		if (prev != NULL)
 		{

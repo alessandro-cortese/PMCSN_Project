@@ -361,7 +361,7 @@ int main(int argc, char **argv)
 			printf("Something went wrong with simulation...\n");
 			exit(-1);
 		}
-		consistency_check_population();
+		consistency_check_population(&events);
 		last_event = t->current;
 
 		printf("Popolazione dopo dell'evento\n");

@@ -70,7 +70,7 @@ bool is_system_empty(struct states *state, int *n)
     return flag;
 }
 
-struct next_abandon *get_min_abandon(struct abandon_node *head)
+struct next_abandon *get_min_abandon(struct queue_node *head)
 {
     // GetMinAbandon
     struct next_abandon *min = (struct next_abandon *)malloc(sizeof(struct next_abandon));
@@ -78,17 +78,17 @@ struct next_abandon *get_min_abandon(struct abandon_node *head)
     if (head != NULL)
     {
         min->user_Id = head->id;
-        min->abandonTime = head->abandon_time;
+        min->abandonTime = head->arrival_time;
     }
 
-    struct abandon_node *current = head;
+    struct queue_node *current = head;
 
     while (current != NULL)
     {
-        if (current->abandon_time < min->abandonTime)
+        if (current->arrival_time < min->abandonTime)
         {
             min->user_Id = current->id;
-            min->abandonTime = current->abandon_time;
+            min->abandonTime = current->arrival_time;
         }
         current = current->next;
     }
@@ -264,64 +264,72 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
     if (get_random(13) <= P_OF_CUSTOMER_SUPPORT)
     {
         printf("Route to customer support!\n");
-        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-        if (!job)
-        {
-            printf("Error in malloc in routing_ticket_purchased to customer support!\n");
-            exit(-1);
-        }
+        struct queue_node *job;
+        // if (!job)
+        // {
+        //     printf("Error in malloc in routing_ticket_purchased to customer support!\n");
+        //     exit(-1);
+        // }
 
-        job = events->head_ticket_purchased;
-        events->head_ticket_purchased = job->next;
-        job->prev = NULL;
+        // job = events->head_ticket_purchased;
+        // events->head_ticket_purchased = job->next;
+        // job->prev = NULL;
 
-        if (events->head_queue_customer_support == NULL)
-        {
-            events->head_queue_customer_support = job;
-            events->tail_queue_customer_support = job;
-            job->next = NULL;
-            job->prev = NULL;
-        }
-        else
-        {
-            events->tail_queue_customer_support->next = job;
-            job->prev = events->tail_queue_customer_support;
-            job->next = NULL;
-            events->tail_queue_customer_support = job;
-        }
+        job = dequeue_node(&events->head_ticket_purchased);
 
-        job = NULL;
+        // if (events->head_queue_customer_support == NULL)
+        // {
+        //     events->head_queue_customer_support = job;
+        //     events->tail_queue_customer_support = job;
+        //     job->next = NULL;
+        //     job->prev = NULL;
+        // }
+        // else
+        // {
+        //     events->tail_queue_customer_support->next = job;
+        //     job->prev = events->tail_queue_customer_support;
+        //     job->next = NULL;
+        //     events->tail_queue_customer_support = job;
+        // }
+
+        // job = NULL;
+        enqueue_node(&events->head_queue_customer_support, &events->tail_queue_customer_support, job);
         user_arrivals_customer_support(events, time, &state[2], &loss[2], rate);
     }
     else
     {
+        printf("Routing to security check\n");
         // da ticket purchased a head user_security_check
-        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-        if (!job)
-        {
-            printf("Error in malloc in routing ticket purchased to ticket gate!\n");
-            exit(-1);
-        }
-        job = events->head_ticket_purchased;
-        events->head_ticket_purchased = events->head_ticket_purchased->next;
+        struct queue_node *job;
 
-        if (events->head_user_to_security_check == NULL)
-        {
-            events->head_user_to_security_check = job;
-            events->tail_user_to_security_check = job;
-            job->prev = NULL;
-            job->next = NULL;
-        }
-        else
-        {
-            events->tail_user_to_security_check->next = job;
-            job->prev = events->tail_user_to_security_check;
-            job->next = NULL;
-            events->tail_user_to_security_check = job;
-        }
-        job = NULL;
+        job = dequeue_node(&events->head_ticket_purchased);
+
+        // if (!job)
+        // {
+        //     printf("Error in malloc in routing ticket purchased to ticket gate!\n");
+        //     exit(-1);
+        // }
+        // job = events->head_ticket_purchased;
+
+        // events->head_ticket_purchased = events->head_ticket_purchased->next;
+
+        // if (events->head_user_to_security_check == NULL)
+        // {
+        //     events->head_user_to_security_check = job;
+        //     events->tail_user_to_security_check = job;
+        //     job->prev = NULL;
+        //     job->next = NULL;
+        // }
+        // else
+        // {
+        //     events->tail_user_to_security_check->next = job;
+        //     job->prev = events->tail_user_to_security_check;
+        //     job->next = NULL;
+        //     events->tail_user_to_security_check = job;
+        // }
+        // job = NULL;
+        enqueue_node(&events->head_user_to_security_check, &events->tail_user_to_security_check, job);
         printf("len ticket purchased %d\n", lenOfQueue(events->head_ticket_purchased));
-
         routing_security_check(events, time, rate);
     }
 }
@@ -334,79 +342,85 @@ void routing_security_check(struct event_list *events, struct time *time, double
     if (get_random(14) <= P_OF_SECURITY_CHECK)
     {
         printf("Route to security check queue!\n");
-        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-        if (!job)
-        {
-            printf("Error in malloc in routing security check to security check!\n");
-            exit(-1);
-        }
+        struct queue_node *job;
+        // if (!job)
+        // {
+        //     printf("Error in malloc in routing security check to security check!\n");
+        //     exit(-1);
+        // }
 
-        job = events->head_user_to_security_check;
-        events->head_user_to_security_check = events->head_user_to_security_check->next;
+        // job = events->head_user_to_security_check;
+        // events->head_user_to_security_check = events->head_user_to_security_check->next;
 
-        if (events->head_security_check_queue == NULL)
-        {
-            events->head_security_check_queue = job;
-            events->tail_security_check_queue = job;
-            job->prev = NULL;
-            job->next = NULL;
-        }
-        else
-        {
-            events->tail_security_check_queue->next = job;
-            job->prev = events->tail_security_check_queue;
-            job->next = NULL;
-            events->tail_security_check_queue = job;
-        }
-        job = NULL;
+        job = dequeue_node(&events->head_user_to_security_check);
+
+        // if (events->head_security_check_queue == NULL)
+        // {
+        //     events->head_security_check_queue = job;
+        //     events->tail_security_check_queue = job;
+        //     job->prev = NULL;
+        //     job->next = NULL;
+        // }
+        // else
+        // {
+        //     events->tail_security_check_queue->next = job;
+        //     job->prev = events->tail_security_check_queue;
+        //     job->next = NULL;
+        //     events->tail_security_check_queue = job;
+        // }
+        // job = NULL;
+        enqueue_node(&events->head_security_check_queue, &events->tail_security_check_queue, job);
         user_arrivals_security_check(events, time, &state[3], &loss[3], rate);
     }
     else
     {
-
+        printf("Route to ticket gate queue!\n");
         printf("prima, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
-        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
-        if (!job)
-        {
-            printf("Error in malloc in routing security check to ticket gate!\n");
-            exit(-1);
-        }
-        job = events->head_user_to_security_check;
-        events->head_user_to_security_check = events->head_user_to_security_check->next;
+        struct queue_node *job;
+        // if (!job)
+        // {
+        //     printf("Error in malloc in routing security check to ticket gate!\n");
+        //     exit(-1);
+        // }
+        // job = events->head_user_to_security_check;
+        // events->head_user_to_security_check = events->head_user_to_security_check->next;
 
-        printf("job id is %d\n", job->id);
-        if (events->head_ticket_gate == NULL)
-        {
-            printf("Aggiunto in testa\n");
-            events->head_ticket_gate = job;
-            events->tail_ticket_gate = job;
-            job->prev = NULL;
-            job->next = NULL;
-        }
-        else
-        {
-            if (lenOfQueue(events->head_ticket_gate) == 1 && events->head_ticket_gate != events->tail_ticket_gate)
-            {
-                printf("DIO E LA MADONNA\n");
-                printf("events->head_ticket_gate sta a %p\n", events->head_ticket_gate);
-                printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
-            }
-            printf("prima dell'aggiunta in coda, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
-            printf("Aggiunto in coda\n");
-            if (events->tail_ticket_gate == NULL)
-                printf("DIO\n");
-            events->tail_ticket_gate->next = job;
-            printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
-            job->prev = events->tail_ticket_gate;
-            events->tail_ticket_gate = job;
-            if (events->tail_ticket_gate->prev != NULL)
-                printf("MADONNA\n");
-            printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
-            printf("events->tail_ticket_gate->prev sta a %p\n", events->tail_ticket_gate->prev);
-            printf("dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
-        }
-        job->next = NULL;
-        job = NULL;
+        job = dequeue_node(&events->head_user_to_security_check);
+
+        // printf("job id is %d\n", job->id);
+        // if (events->head_ticket_gate == NULL)
+        // {
+        //     printf("Aggiunto in testa\n");
+        //     events->head_ticket_gate = job;
+        //     events->tail_ticket_gate = job;
+        //     job->prev = NULL;
+        //     job->next = NULL;
+        // }
+        // else
+        // {
+        //     if (lenOfQueue(events->head_ticket_gate) == 1 && events->head_ticket_gate != events->tail_ticket_gate)
+        //     {
+        //         printf("DIO E LA MADONNA\n");
+        //         printf("events->head_ticket_gate sta a %p\n", events->head_ticket_gate);
+        //         printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
+        //     }
+        //     printf("prima dell'aggiunta in coda, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
+        //     printf("Aggiunto in coda\n");
+        //     if (events->tail_ticket_gate == NULL)
+        //         printf("DIO\n");
+        //     events->tail_ticket_gate->next = job;
+        //     printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
+        //     job->prev = events->tail_ticket_gate;
+        //     events->tail_ticket_gate = job;
+        //     if (events->tail_ticket_gate->prev != NULL)
+        //         printf("MADONNA\n");
+        //     printf("events->tail_ticket_gate sta a %p\n", events->tail_ticket_gate);
+        //     printf("events->tail_ticket_gate->prev sta a %p\n", events->tail_ticket_gate->prev);
+        //     printf("dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
+        // }
+        // job->next = NULL;
+        // job = NULL;
+        enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
         printf("dopo-dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
     }
@@ -417,7 +431,7 @@ void routing_ticket_gate(struct event_list *events, struct time *time)
     struct loss *loss = get_first_loss();
     user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
 }
-void consistency_check_population()
+void consistency_check_population(struct event_list *events)
 {
     struct states *state = get_first_state_address();
     if (state[0].population < 0)
@@ -445,6 +459,109 @@ void consistency_check_population()
         printf("Population for ticket gate is negative, exiting...\n");
         exit(-1);
     }
+    if (state[0].server_count > NUMBER_OF_TICKET_MACHINE_SERVER)
+    {
+        printf("Errore di consistenza nei server di ticket machine, assegnati più di quelli disponibili!\n");
+        exit(-1);
+    }
+    if (state[1].server_count > NUMBER_OF_TICKET_OFFICE_SERVER)
+    {
+        printf("Errore di consistenza nei server di ticket office, assegnati più di quelli disponibili!\n");
+        exit(-1);
+    }
+
+    if (state[2].queue_count != lenOfQueue(events->head_queue_customer_support))
+    {
+        printf("queue count for customer support is different!\n");
+        printf("len queue customer support is %d\n", lenOfQueue(events->head_queue_customer_support));
+        printf("state[2].queue_count = %d\n", state[2].queue_count);
+        printf("state[2].server_count = %d\n", state[2].server_count);
+        exit(-1);
+    }
+    if (state[2].server_count > NUMBER_OF_CUSTOMER_SUPPORT_SERVER)
+    {
+        printf("Errore di consistenza nei server di customer support, assegnati più di quelli disponibili!\n");
+        exit(-1);
+    }
+    if (state[3].queue_count != lenOfQueue(events->head_security_check_queue))
+    {
+        printf("queue count for security check is different!\n");
+        printf("len queue security check is %d\n", lenOfQueue(events->head_security_check_queue));
+        printf("state[3].queue_count = %d\n", state[3].queue_count);
+        exit(-1);
+    }
+    if (state[3].server_count > NUMBER_OF_SECURITY_CHECK_SERVERS)
+    {
+        printf("Errore di consistenza nei server di security check, assegnati più di quelli disponibili!\n");
+        exit(-1);
+    }
+    if (state[4].queue_count != lenOfQueue(events->head_ticket_gate))
+    {
+        printf("len queue ticket gate is %d\n", lenOfQueue(events->head_ticket_gate));
+        printf("state[4].queue_count = %d\n", state[4].queue_count);
+        exit(-1);
+    }
+    if (state[4].server_count > NUMBER_OF_TICKET_GATE_SERVERS)
+    {
+        printf("Errore di consistenza nei server di ticket gate, assegnati più di quelli disponibili!\n");
+        exit(-1);
+    }
+}
+
+void enqueue_node(struct queue_node **head, struct queue_node **tail, struct queue_node *job)
+{
+    if (*head == NULL)
+    {
+        (*head) = job;
+        (*tail) = job;
+        job->next = NULL;
+        job->prev = NULL;
+    }
+    else if (*head != NULL)
+    {
+        (*tail)->next = job;
+        job->prev = (*tail);
+        job->next = NULL;
+        (*tail) = job;
+    }
+    printf("head = %p\n", head);
+    printf("lenOfQueue(head) = %d\n", lenOfQueue(*head));
+    job = NULL;
+}
+
+void dequeue_node_free_node(struct queue_node **head)
+{
+    struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+    if (!job)
+    {
+        printf("Error in malloc in dequeue_node_free_node!\n");
+        exit(-1);
+    }
+
+    job = (*head);
+    (*head) = (*head)->next;
+    free(job);
+}
+
+struct queue_node *dequeue_node(struct queue_node **head)
+{
+    struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+    if (!job)
+    {
+        printf("Error in malloc in dequeue_node!\n");
+        exit(-1);
+    }
+
+    job = (*head);
+    if ((*head) == NULL)
+    {
+        printf("Null\n");
+    }
+    (*head) = (*head)->next;
+
+    printf("prima\n");
+
+    return job;
 }
 
 void verify(struct area *a, struct loss *loss, double t, struct time *time)
