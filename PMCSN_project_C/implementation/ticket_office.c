@@ -29,9 +29,6 @@ double get_abandon_ticket_office(double start)
 
 void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	// printf("Evento di arrivo in ticket office!\n");
-	// printf("state->queue_count = %d\n", state->queue_count);
-	// printf("state->server_count = %d\n", state->server_count);
 	if (state->server_count >= 6)
 	{
 		printf("Server count in ticket office is wrong\n");
@@ -80,21 +77,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			printf("abandon time is %f\n", abandon_node->arrival_time);
 
 			// If is the first time that a job abandon the queue
-			// if (events->head_ticket_office == NULL)
-			// {
-			// 	events->head_ticket_office = tail_job;
-			// 	events->tail_ticket_office = tail_job;
-			// 	tail_job->prev = NULL;
-			// 	tail_job->next = NULL;
-			// }
-			// else
-			// {
-			// 	events->tail_ticket_office->next = tail_job;
-			// 	tail_job->prev = events->tail_ticket_office;
-			// 	tail_job->next = NULL;
-			// 	events->tail_ticket_office = tail_job;
-			// }
-			// tail_job = NULL;
+			
 			enqueue_node(&events->head_ticket_office, &events->tail_ticket_office, abandon_node);
 		}
 		else
@@ -113,13 +96,6 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 			state->population = state->queue_count + state->server_count;
 		}
 	}
-	// printf("Dopo evento di arrivo in ticket office!\n");
-	// for (int i = 0; i < NUMBER_OF_TICKET_OFFICE_SERVER; i++)
-	//{
-	//	printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
-	// }
-	// printf("state->queue_count = %d\n", state->queue_count);
-	// printf("state->server_count = %d\n", state->server_count);
 }
 
 void user_arrivals_ticket_office_feedback(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
@@ -161,23 +137,6 @@ void user_arrivals_ticket_office_feedback(struct event_list *events, struct time
 		printf("abandon job id is %d\n", job->id);
 		job->arrival_time = get_abandon_ticket_office(time->current);
 		printf("abandon time is %f\n", job->arrival_time);
-
-		// If is the first time that a job abandon the queue
-		// if (events->head_ticket_office == NULL)
-		// {
-		// 	events->head_ticket_office = job;
-		// 	events->tail_ticket_office = job;
-		// 	tail_job->prev = NULL;
-		// 	tail_job->next = NULL;
-		// }
-		// else
-		// {
-		// 	events->tail_ticket_office->next = tail_job;
-		// 	tail_job->prev = events->tail_ticket_office;
-		// 	tail_job->next = NULL;
-		// 	events->tail_ticket_office = tail_job;
-		// }
-		// tail_job = NULL;
 		enqueue_node(&events->head_ticket_office, &events->tail_ticket_office, job);
 	}
 	else

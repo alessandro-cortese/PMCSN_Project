@@ -24,10 +24,6 @@ double get_abandon_customer_support(double start)
 
 void user_arrivals_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	// printf("Arrivo customer support\n");
-	// printf("state->queue_count = %d\n", state->queue_count);
-	// printf("state->server_count = %d\n", state->server_count);
-
 	loss->index_user += 1;
 
 	// events->user_arrival_to_customer_support.user_arrival_time = events->head_queue_customer_support->arrival_time;
@@ -48,44 +44,12 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		// abandon is here
 		printf("Random choose abandon customer support!\n");
 		struct queue_node *abandon_job;
-		// if (!abandon_job)
-		// {
-		// 	printf("Error in malloc in user arrival in customer support!\n");
-		// 	exit(-1);
-		// }
-
-		// // CASE 2: delete a node from head_ticket_purchased and add to abandon customer support queue
-		// abandon_job = events->head_queue_customer_support;
-		// events->head_queue_customer_support = events->head_queue_customer_support->next;
-
 		abandon_job = dequeue_node(&events->head_queue_customer_support);
 
 		abandon_job->id = loss->index_user;
 		abandon_job->arrival_time = get_abandon_customer_support(time->current);
 
 		printf("2.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-
-		// if (events->head_customer_support == NULL)
-		// {
-		// 	printf("4.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		// 	events->head_customer_support = abandon_job;
-		// 	events->head_customer_support->prev = NULL;
-		// 	events->head_customer_support->next = NULL;
-		// 	printf("5.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		// 	events->tail_customer_support = abandon_job;
-		// }
-		// else if (events->head_customer_support != NULL)
-		// {
-		// 	printf("6.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		// 	events->tail_customer_support->next = abandon_job;
-		// 	printf("8.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		// 	abandon_job->prev = events->tail_customer_support;
-		// 	printf("9.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		// 	abandon_job->next = NULL;
-		// 	printf("10.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		// 	events->tail_customer_support = abandon_job;
-		// 	printf("7.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
-		//}
 		enqueue_node(&events->head_customer_support, &events->tail_customer_support, abandon_job);
 		printf("3.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 	}
@@ -120,10 +84,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 		}
 		state->population = state->queue_count + state->server_count;
 	}
-
-	// printf("Arrivo dopo customer support\n");
-	// printf("state->queue_count = %d\n", state->queue_count);
-	// printf("state->server_count = %d\n", state->server_count);
 }
 
 void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
@@ -183,21 +143,6 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	}
 	else
 	{
-		// if (events->head_user_to_security_check == NULL)
-		// {
-		// 	events->head_user_to_security_check = tail_job;
-		// 	events->tail_user_to_security_check = tail_job;
-		// 	tail_job->prev = NULL;
-		// 	tail_job->next = NULL;
-		// }
-		// else
-		// {
-		// 	events->tail_user_to_security_check->next = tail_job;
-		// 	tail_job->prev = events->tail_user_to_security_check;
-		// 	tail_job->next = NULL;
-		// 	events->tail_user_to_security_check = tail_job;
-		// }
-		// tail_job = NULL;
 		enqueue_node(&events->head_user_to_security_check, &events->tail_user_to_security_check, tail_job);
 		routing_security_check(events, time, rate);
 	}

@@ -51,7 +51,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		della testa al prossimo nodo e liberiamo memoria.
 		*/
 
-		state->server_count++;
+		state->server_count += 1;
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
 
@@ -61,7 +61,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	}
 	else if (idle_offset == -1)
 	{
-		state->queue_count++;
+		state->queue_count += 1;
 	}
 
 	state->population = state->queue_count + state->server_count;
@@ -78,7 +78,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	printf("state->server_count = %d\n", state->server_count);
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
-	state->server_count--;
+	state->server_count -= 1;
 
 	// Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al ticket gate
 	struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -100,10 +100,9 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		processed_job_security_check[server_offset] = events->head_security_check_queue->id;
 		state->server_occupation[server_offset] = 1;
 		events->completionTimes_security_check[server_offset] = get_security_check_departure(time->current);
-		// events->head_security_check_queue = events->head_security_check_queue->next;
 		dequeue_node_free_node(&events->head_security_check_queue);
-		state->queue_count--;
-		state->server_count++;
+		state->queue_count -= 1;
+		state->server_count += 1;
 		printf("Dentro la departure\n");
 		printf("state->queue_count = %d\n", state->queue_count);
 		printf("state->server_count = %d\n", state->server_count);
@@ -116,7 +115,6 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		Il servente ha terminato la sua esecuzione e resettiamo il suo stato perché non
 		c'è più nessun altro job da processare.
 		*/
-
 		events->completionTimes_security_check[server_offset] = (double)INFINITY;
 		state->server_occupation[server_offset] = 0;
 	}
@@ -128,25 +126,6 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		job->id = processed_job_security_check[server_offset];
 		job->arrival_time = time->current;
 
-		// if (events->head_ticket_gate == NULL)
-		// {
-		// 	tail->id = processed_job_security_check[server_offset];
-		// 	events->head_ticket_gate = tail;
-		// 	events->head_ticket_gate->prev = NULL;
-		// 	events->head_ticket_gate->next = NULL;
-		// 	events->tail_ticket_gate = tail;
-		// }
-		// else if (events->head_ticket_gate != NULL)
-		// {
-		// 	tail->id = processed_job_security_check[server_offset];
-		// 	events->tail_ticket_gate->next = tail;
-		// 	tail->prev = events->tail_ticket_gate;
-		// 	tail->next = NULL;
-		// 	events->tail_ticket_gate = tail;
-		// }
-
-		// tail = NULL;
-
 		enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
 		routing_ticket_gate(events, time);
 	}
@@ -154,8 +133,6 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	{
 		printf("Job have false document\n");
 		// prob of having false document or other problems
-		events->completionTimes_security_check[server_offset] = (double)INFINITY;
-		state->server_occupation[server_offset] = 0;
 	}
 
 	state->population = state->queue_count + state->server_count;

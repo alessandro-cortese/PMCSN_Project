@@ -47,22 +47,7 @@ void append_user_arrival_ticket_purchased(struct event_list *events, struct time
         }
         tail_job->id = count_id;
         tail_job->arrival_time = time->current;
-
-        // if (events->head_ticket_purchased == NULL)
-        // {
-        //     events->head_ticket_purchased = tail_job;
-        //     events->head_ticket_purchased->prev = NULL;
-        //     events->head_ticket_purchased->next = NULL;
-        //     events->tail_ticket_purchased = tail_job;
-        // }
-        // else if (events->head_ticket_purchased != NULL)
-        // {
-        //     events->tail_ticket_purchased->next = tail_job;
-        //     tail_job->prev = events->tail_ticket_purchased;
-        //     tail_job->next = NULL;
-        //     events->tail_ticket_purchased = tail_job;
-        // }
-
+        
         enqueue_node(&events->head_ticket_purchased, &events->tail_ticket_purchased, tail_job);
         routing_ticket_purchased(events, time, rate);
     }
