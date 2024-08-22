@@ -67,9 +67,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 				exit(-1);
 			}
 			abandon_job->id = loss->index_user;
-			printf("abandon job id is %d\n", abandon_job->id);
 			abandon_job->arrival_time = get_abandon_ticket_machine(time->current);
-			printf("abandon time is %f\n", abandon_job->arrival_time);
 			enqueue_node(&events->head_ticket_machine, &events->tail_ticket_machine, abandon_job);
 		}
 		else
@@ -79,7 +77,6 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 				// Set idle server to busy server and update departure time
 				state->server_occupation[idle_offset] = 1;
 				events->completionTimes_ticket_machine[idle_offset] = get_ticket_machine_departure(time->current);
-				// Prendo il job che sta in testa e lo processo
 				state->server_count += 1;
 			}
 			else if (idle_offset == -1)
@@ -125,43 +122,45 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-	printf("Abandon ticket machine!\n");
-	if (events->head_ticket_machine != NULL)
-	{
-		struct queue_node *current = events->head_ticket_machine;
-		while (current != NULL)
-		{
-			if (current->id == job_id)
-			{
-				printf("current->id = %d\n", current->id);
-				break;
-			}
+    printf("Abandon ticket machine!\n");
 
-			current = current->next;
-		}
+    struct queue_node *current = events->head_ticket_machine;
+    while (current != NULL)
+    {
+        if (current->id == job_id)
+        {
+            break;
+        }
+        current = current->next;
+    }
 
-		struct queue_node *prev = current->prev;
-		struct queue_node *next = current->next;
+    if (current == NULL)
+    {
+        printf("Job ID %d not found in the ticket machine queue!\n", job_id);
+        return;
+    }
 
-		if (prev != NULL)
-		{
-			prev->next = current->next;
-		}
-		else
-		{
-			events->head_ticket_machine = next;
-		}
+    struct queue_node *prev = current->prev;
+    struct queue_node *next = current->next;
 
-		if (next != NULL)
-		{
-			next->prev = current->prev;
-		}
-		else
-		{
-			events->head_ticket_machine = prev;
-		}
+    if (prev != NULL)
+    {
+        prev->next = next;
+    }
+    else
+    {
+        events->head_ticket_machine = next;
+    }
 
-		free(current);
-		loss->loss_user += 1;
-	}
+    if (next != NULL)
+    {
+        next->prev = prev;
+    }
+    else
+    {
+        events->tail_ticket_machine = prev;  // Aggiorna la coda quando rimuovi l'ultimo elemento
+    }
+
+    free(current);
+    loss->loss_user += 1;
 }

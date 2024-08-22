@@ -1,5 +1,5 @@
 #define START 0.0
-#define STOP 1000000.0
+#define STOP 14400.0
 #define SEED 123456789
 
 // Dimension of array of time
@@ -21,9 +21,9 @@
 #define NUMBER_OF_TICKET_GATE_SERVERS 15
 
 // Interarrival time [sec]
-#define ARRIVAL_1 7.751937 // [05 - 08]
-#define ARRIVAL_2 1.585037 // [08 - 19]
-#define ARRIVAL_3 4.739336 // [19 - 24]
+#define ARRIVAL_1 7.751937 // [05 - 08] -> STOP: 10800
+#define ARRIVAL_2 1.585037 // [08 - 19] -> STOP: 39600
+#define ARRIVAL_3 4.739336 // [19 - 24] -> STOP: 14400
 
 // Probability
 #define P_OF_TICKET_PURCHASED_ONLINE 0.6321

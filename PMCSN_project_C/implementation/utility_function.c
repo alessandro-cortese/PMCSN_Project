@@ -277,7 +277,6 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
 
         job = dequeue_node(&events->head_ticket_purchased);
         enqueue_node(&events->head_user_to_security_check, &events->tail_user_to_security_check, job);
-        printf("len ticket purchased %d\n", lenOfQueue(events->head_ticket_purchased));
         routing_security_check(events, time, rate);
     }
 }
@@ -298,11 +297,9 @@ void routing_security_check(struct event_list *events, struct time *time, double
     else
     {
         printf("Route to ticket gate queue!\n");
-        printf("prima, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         struct queue_node *job;
         job = dequeue_node(&events->head_user_to_security_check);
         enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
-        printf("dopo-dopo, len ticket gate queue %d\n", lenOfQueue(events->head_ticket_gate));
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
     }
 }
@@ -387,6 +384,17 @@ void consistency_check_population(struct event_list *events)
         printf("Errore di consistenza nei server di ticket gate, assegnati più di quelli disponibili!\n");
         exit(-1);
     }
+    if (state[4].queue_count == 1 && state[4].server_count < 15)
+    {
+        struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
+        if (!job)
+        {
+            printf("Error in malloc in routing security check to ticket gate!\n");
+            exit(-1);
+        }
+        printf("Consistency Error in queue of ticket gate!\n");
+        exit(-1);
+    }
 }
 
 void enqueue_node(struct queue_node **head, struct queue_node **tail, struct queue_node *job)
@@ -405,8 +413,6 @@ void enqueue_node(struct queue_node **head, struct queue_node **tail, struct que
         job->next = NULL;
         (*tail) = job;
     }
-    printf("head = %p\n", head);
-    printf("lenOfQueue(head) = %d\n", lenOfQueue(*head));
     job = NULL;
 }
 
@@ -434,13 +440,7 @@ struct queue_node *dequeue_node(struct queue_node **head)
     }
 
     job = (*head);
-    if ((*head) == NULL)
-    {
-        printf("Null\n");
-    }
     (*head) = (*head)->next;
-
-    printf("prima\n");
 
     return job;
 }

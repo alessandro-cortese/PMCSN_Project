@@ -16,9 +16,6 @@ double get_security_check_departure(double start)
 
 void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
 {
-	printf("Arrivals security check\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
 	struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!job)
 	{
@@ -34,7 +31,6 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_SECURITY_CHECK_SERVERS; i++)
 	{
-		printf("state->server_occupation[%d] = %d\n", i, state->server_occupation[i]);
 		if (state->server_occupation[i] == 0)
 		{
 			idle_offset = i;
@@ -65,17 +61,10 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	}
 
 	state->population = state->queue_count + state->server_count;
-	printf("idle_offset = %d\n", idle_offset);
-	printf("Arrivals security check, fine evento\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
 }
 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
 {
-	printf("Departure security check\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
 	state->server_count -= 1;
@@ -103,10 +92,6 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		dequeue_node_free_node(&events->head_security_check_queue);
 		state->queue_count -= 1;
 		state->server_count += 1;
-		printf("Dentro la departure\n");
-		printf("state->queue_count = %d\n", state->queue_count);
-		printf("state->server_count = %d\n", state->server_count);
-		printf("lenOfQueue(events->head_security_check_queue) = %d\n", lenOfQueue(events->head_security_check_queue));
 	}
 	else
 	{
@@ -122,7 +107,6 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	if (!(get_random(11) <= P_LEAVE_SECURITY_CONTROL))
 	{
 
-		printf("prima\n");
 		job->id = processed_job_security_check[server_offset];
 		job->arrival_time = time->current;
 
@@ -132,11 +116,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 	else
 	{
 		printf("Job have false document\n");
-		// prob of having false document or other problems
 	}
 
 	state->population = state->queue_count + state->server_count;
-	printf("Departure security check, fine funzione\n");
-	printf("state->queue_count = %d\n", state->queue_count);
-	printf("state->server_count = %d\n", state->server_count);
 }

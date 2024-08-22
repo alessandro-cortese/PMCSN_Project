@@ -40,22 +40,16 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 
 	if (get_random(8) <= P_LEAVE_CUSTOMER_SUPPORT)
 	{
-		printf("1.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 		// abandon is here
 		printf("Random choose abandon customer support!\n");
 		struct queue_node *abandon_job;
 		abandon_job = dequeue_node(&events->head_queue_customer_support);
-
 		abandon_job->id = loss->index_user;
 		abandon_job->arrival_time = get_abandon_customer_support(time->current);
-
-		printf("2.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 		enqueue_node(&events->head_customer_support, &events->tail_customer_support, abandon_job);
-		printf("3.lenOfQueue(events->head_ticket_gate) = %d\n", lenOfQueue(events->head_ticket_gate));
 	}
 	else
 	{
-		printf("idle offset for customer support is %d\n", idle_offset);
 		if (idle_offset >= 0 && events->head_queue_customer_support != NULL)
 		{
 			/*
@@ -152,6 +146,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
 	printf("Abandon customer support!\n");
+
 	struct queue_node *current = events->head_customer_support;
 	while (current != NULL)
 	{
@@ -160,12 +155,18 @@ void abandon_customer_support(struct event_list *events, struct states *state, s
 		current = current->next;
 	}
 
+	if (current == NULL)
+	{
+		printf("Job ID %d not found in the queue!\n", job_id);
+		return;
+	}
+
 	struct queue_node *prev = current->prev;
 	struct queue_node *next = current->next;
 
 	if (prev != NULL)
 	{
-		prev->next = current->next;
+		prev->next = next;
 	}
 	else
 	{
@@ -174,11 +175,11 @@ void abandon_customer_support(struct event_list *events, struct states *state, s
 
 	if (next != NULL)
 	{
-		next->prev = current->prev;
+		next->prev = prev;
 	}
 	else
 	{
-		events->head_customer_support = prev;
+		events->tail_customer_support = prev;
 	}
 
 	free(current);
