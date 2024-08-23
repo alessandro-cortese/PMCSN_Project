@@ -28,18 +28,18 @@ double get_abandon_ticket_machine(double start)
 	return departure;
 }
 
-void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+void user_arrivals_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate, double stop)
 {
 	// generate next event
 	events->user_arrival_to_ticket_machine.user_arrival_time = get_user_arrival_to_ticket_machine(time->current, rate);
 
 	time->last[0] = time->current;
 
-	if (events->user_arrival_to_ticket_machine.user_arrival_time > STOP)
+	if (events->user_arrival_to_ticket_machine.user_arrival_time > stop)
 	{
 		events->user_arrival_to_ticket_machine.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;
-		printf("Stop arrival to ticket machine!\n");
+		//printf("Stop arrival to ticket machine!\n");
 	}
 	else
 	{
@@ -122,8 +122,6 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-    printf("Abandon ticket machine!\n");
-
     struct queue_node *current = events->head_ticket_machine;
     while (current != NULL)
     {

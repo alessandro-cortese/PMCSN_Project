@@ -27,15 +27,15 @@ double get_user_arrival_to_ticket_purchased(double arrival, double rate)
     return (arrival);
 }
 
-void append_user_arrival_ticket_purchased(struct event_list *events, struct time *time, double rate)
+void append_user_arrival_ticket_purchased(struct event_list *events, struct time *time, double rate, double stop)
 {
     count_id++;
     events->user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(time->current, rate);
-    if (events->user_who_has_purchased_ticket.user_arrival_time > STOP)
+    if (events->user_who_has_purchased_ticket.user_arrival_time > stop)
     {
         events->user_who_has_purchased_ticket.user_arrival_time = (double)INFINITY;
         events->user_who_has_purchased_ticket.is_user_arrival_active = false;
-        printf("Stop arrival to ticket purchased!\n");
+        //printf("Stop arrival to ticket purchased!\n");
     }
     else
     {

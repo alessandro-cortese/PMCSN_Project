@@ -113,10 +113,5 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
 		routing_ticket_gate(events, time);
 	}
-	else
-	{
-		printf("Job have false document\n");
-	}
-
 	state->population = state->queue_count + state->server_count;
 }

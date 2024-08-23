@@ -41,7 +41,6 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	if (get_random(8) <= P_LEAVE_CUSTOMER_SUPPORT)
 	{
 		// abandon is here
-		printf("Random choose abandon customer support!\n");
 		struct queue_node *abandon_job;
 		abandon_job = dequeue_node(&events->head_queue_customer_support);
 		abandon_job->id = loss->index_user;
@@ -127,7 +126,7 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 	// feedback is here
 	if (get_random(9) <= P_OF_CHANGE_TICKET)
 	{
-		printf("Feedback event\n");
+		// printf("Feedback event\n");
 		/*
 		Se il job fa il feedback, libero memoria perché i primi due centri non tangono
 		conto dei dati dei job che arrivato.
@@ -145,8 +144,6 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 
 void abandon_customer_support(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-	printf("Abandon customer support!\n");
-
 	struct queue_node *current = events->head_customer_support;
 	while (current != NULL)
 	{

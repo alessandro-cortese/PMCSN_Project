@@ -1,6 +1,17 @@
 #define START 0.0
-#define STOP 14400.0
+
+// Stop value for different lambda
+#define STOP_INTERVAL_1 10800
+#define STOP_INTERVAL_2 39600
+#define STOP_INTERVAL_3 14400
+
+// Number of repetition
+#define NUM_REPETITION 5
+
 #define SEED 123456789
+
+#define LEVEL_OF_CONFIDENCE 0.95
+#define SAMPLING 1
 
 // Dimension of array of time
 #define DIM 13
@@ -21,9 +32,9 @@
 #define NUMBER_OF_TICKET_GATE_SERVERS 15
 
 // Interarrival time [sec]
-#define ARRIVAL_1 7.751937 // [05 - 08] -> STOP: 10800
-#define ARRIVAL_2 1.585037 // [08 - 19] -> STOP: 39600
-#define ARRIVAL_3 4.739336 // [19 - 24] -> STOP: 14400
+#define ARRIVAL_1 7.751937 // [05 - 08]
+#define ARRIVAL_2 1.585037 // [08 - 19]
+#define ARRIVAL_3 4.739336 // [19 - 24]
 
 // Probability
 #define P_OF_TICKET_PURCHASED_ONLINE 0.6321

@@ -27,17 +27,17 @@ double get_abandon_ticket_office(double start)
 	return departure;
 }
 
-void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+void user_arrivals_ticket_office(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate, double stop)
 {
 	events->user_arrival_to_ticket_office.user_arrival_time = get_user_arrival_to_ticket_office(time->current, rate);
 
 	time->last[1] = time->current;
 
-	if (events->user_arrival_to_ticket_office.user_arrival_time > STOP)
+	if (events->user_arrival_to_ticket_office.user_arrival_time > stop)
 	{
 		events->user_arrival_to_ticket_office.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;
-		printf("Stop arrival to ticket office!\n");
+		// printf("Stop arrival to ticket office!\n");
 	}
 	else
 	{
@@ -53,7 +53,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 				break;
 			}
 		}
-	
+
 		if (get_random(2) <= P_LEAVE_TICKET_OFFICE)
 		{
 			struct queue_node *abandon_node = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -62,7 +62,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 				printf("Error in malloc in user arrival in ticket office!\n");
 				exit(-1);
 			}
-			
+
 			abandon_node->id = loss->index_user;
 			abandon_node->arrival_time = get_abandon_ticket_office(time->current);
 
@@ -169,46 +169,43 @@ void user_departure_ticket_office(struct event_list *events, struct time *time, 
 
 void abandon_ticket_office(struct event_list *events, struct states *state, struct loss *loss, int job_id)
 {
-    printf("Abandon ticket office!\n");
+	struct queue_node *current = events->head_ticket_office;
+	while (current != NULL)
+	{
+		if (current->id == job_id)
+		{
+			break;
+		}
+		current = current->next;
+	}
 
-    struct queue_node *current = events->head_ticket_office;
-    while (current != NULL)
-    {
-        if (current->id == job_id)
-        {
-            printf("current->id = %d\n", current->id);
-            break;
-        }
-        current = current->next;
-    }
+	if (current == NULL)
+	{
+		printf("Job ID %d not found in the ticket office queue!\n", job_id);
+		return;
+	}
 
-    if (current == NULL)
-    {
-        printf("Job ID %d not found in the ticket office queue!\n", job_id);
-        return;
-    }
+	struct queue_node *prev = current->prev;
+	struct queue_node *next = current->next;
 
-    struct queue_node *prev = current->prev;
-    struct queue_node *next = current->next;
+	if (prev != NULL)
+	{
+		prev->next = next;
+	}
+	else
+	{
+		events->head_ticket_office = next;
+	}
 
-    if (prev != NULL)
-    {
-        prev->next = next;
-    }
-    else
-    {
-        events->head_ticket_office = next;
-    }
+	if (next != NULL)
+	{
+		next->prev = prev;
+	}
+	else
+	{
+		events->tail_ticket_office = prev; // Aggiorna la coda quando rimuovi l'ultimo elemento
+	}
 
-    if (next != NULL)
-    {
-        next->prev = prev;
-    }
-    else
-    {
-        events->tail_ticket_office = prev;  // Aggiorna la coda quando rimuovi l'ultimo elemento
-    }
-
-    free(current);
-    loss->loss_user += 1;
+	free(current);
+	loss->loss_user += 1;
 }
