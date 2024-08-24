@@ -35,7 +35,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 
 	time->last[0] = time->current;
 
-	if (events->user_arrival_to_ticket_machine.user_arrival_time > stop)
+	if (stop != (double) INFINITY && events->user_arrival_to_ticket_machine.user_arrival_time > stop)
 	{
 		events->user_arrival_to_ticket_machine.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_machine.is_user_arrival_active = false;

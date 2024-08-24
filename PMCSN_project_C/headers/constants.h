@@ -8,6 +8,11 @@
 // Number of repetition
 #define NUM_REPETITION 5
 
+// Number of batch
+#define K 128
+// Batch size
+#define B 1024
+
 #define SEED 123456789
 
 #define LEVEL_OF_CONFIDENCE 0.95
@@ -63,3 +68,6 @@
 
 // Total number of queues
 #define QUEUE_NUMBER_CENTERS 5
+
+// Number of statistics
+#define NUMBER_OF_STATISTICS 8

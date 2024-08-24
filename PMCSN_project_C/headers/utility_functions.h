@@ -14,6 +14,7 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
 void routing_security_check(struct event_list *events, struct time *time, double rate);
 void routing_ticket_gate(struct event_list *events, struct time *time);
 void feedback(struct event_list *events, struct time *time, double rate);
+void get_statistics_for_batch(int center_index, int *count, double ***batch_statistics, double **sum, double **mean, double diff, int *number_of_centers, struct area *area, struct time *time, struct loss *loss);
 void verify(struct area *area, struct loss *loss, double time, struct time *t);
 void consistency_check_population(struct event_list *events);
 void enqueue_node(struct queue_node **head, struct queue_node **tail, struct queue_node *job);

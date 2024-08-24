@@ -11,6 +11,7 @@
 #include "./headers/ticket_gate.h"
 #include "./headers/constants.h"
 #include "./headers/rngs.h"
+#include "./headers/rvms.h"
 #include "./headers/utility_functions.h"
 #include "./headers/ticket_purchased.h"
 #include "./headers/validation.h"
@@ -170,6 +171,10 @@ void calcultate_area_struct(int *n)
 	areas[4].queue += (t->next - t->current) * (state[4].queue_count);
 	areas[4].node += (t->next - t->current) * (state[4].queue_count + ticket_gate_busy_servers);
 }
+
+/*
+Server per la simulazione a orizzonte finito, da fare dopo.
+*/
 
 // void write_rho_on_csv(int time_slot, struct area *area, double current_time)
 // {
@@ -344,7 +349,6 @@ void finite_horizon_run(int *number_of_centers, double rate, double stop_value, 
 		last_event = t->current;
 	}
 
-	// write_rho_on_csv(time_slot, areas, t->current);
 	verify(areas, loss, last_event, t);
 	// printf("\n\nEND FINITE HORIZON RUN REPETITION #%d\n", repetition_index);
 }
@@ -380,13 +384,384 @@ void finite_horizon_simulation(double rate, double stop, int num_repetition, int
 		print_progress_bar(repetition + 1, NUM_REPETITION, repetition);
 		sleep(1);
 	}
+
+	// write_rho_on_csv(time_slot, areas, t->current);
 	print_progress_bar(num_repetition, NUM_REPETITION, num_repetition - 1);
 	printf("\n\nEND FINITE HORIZON SIMULATION\n");
 }
 
-void infinite_horizon_simulation(int num_repetition)
+void infinite_horizon_run(double rate, int *number_of_centers)
 {
-	printf("TODO: implementation of infinite horizon");
+	initializeTime();
+	initializeArea();
+	initializeStateVariables(number_of_centers);
+	initializeArrivalLoss();
+	initializeEventList(number_of_centers, rate);
+
+	/*
+	Struttura dati per salvare le statistiche dei centri in base al batch considerato
+	*/
+
+	double ***batch_statistics = (double ***)malloc(sizeof(double **) * QUEUE_NUMBER_CENTERS);
+	if (batch_statistics == NULL)
+	{
+		printf("Error in first malloc in infinite horizon run!\n");
+		exit(-1);
+	}
+
+	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+	{
+		batch_statistics[i] = (double **)malloc(sizeof(double *) * NUMBER_OF_STATISTICS);
+		if (batch_statistics[i] == NULL)
+		{
+			printf("Error in second malloc in inifinite horizon simulation!\n");
+			exit(-1);
+		}
+
+		for (int j = 0; j < NUMBER_OF_STATISTICS; j++)
+		{
+			batch_statistics[i][j] = (double *)malloc(sizeof(double) * K);
+			if (batch_statistics[i][j] == NULL)
+			{
+				printf("Error in third malloc in inifinite server horizon!\n");
+				exit(-1);
+			}
+		}
+	}
+
+	/*
+	Prima struttura dati a supporto per il calcolo delle statistiche del batch
+	*/
+
+	double **sum = (double **)malloc(sizeof(double *) * QUEUE_NUMBER_CENTERS);
+	if (sum == NULL)
+	{
+		printf("Error in malloc for sum in inifinite horizon run!\n");
+		exit(-1);
+	}
+	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+	{
+		sum[i] = (double *)malloc(sizeof(double) * NUMBER_OF_STATISTICS);
+		if (sum[i] == NULL)
+		{
+			printf("Error in malloc for sum[%d] in infinite horizon run!\n", i);
+			exit(-1);
+		}
+	}
+
+	/*
+	Seconda struttura dati a supporto per il calcolo delle statistiche del batch
+	*/
+
+	double **mean = (double **)malloc(sizeof(double *) * QUEUE_NUMBER_CENTERS);
+	if (mean == NULL)
+	{
+		printf("Error in malloc for mean in inifinite horizon run!\n");
+		exit(-1);
+	}
+	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+	{
+		mean[i] = (double *)malloc(sizeof(double) * NUMBER_OF_STATISTICS);
+		if (mean[i] == NULL)
+		{
+			printf("Error in malloc for mean[%d] in infinite horizon run!\n", i);
+			exit(-1);
+		}
+	}
+
+	int count[5] = {0, 0, 0, 0, 0};
+	int remaining = 0;
+	double batch_time[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+
+	printf("\n\nINFINITE HORIZON SIMULATION!\n");
+	while (true)
+	{
+
+		remaining = 0;
+		for (int i = 0; i < 5; i++)
+		{
+			if (count[i] < K * B)
+				remaining++;
+		}
+		if (remaining == 0)
+			break;
+
+		t->next = get_minimum_time(events, state, number_of_centers);
+
+		// printf("----------\n");
+		// printf("t->current:%f\n", t->current);
+		// printf("t->next: %f\n\n\n", t->next);
+		calcultate_area_struct(number_of_centers);
+		// printf("----------\n");
+
+		if (t->next == t->current)
+		{
+			printf("Current time is equal to next time...\n");
+			exit(-1);
+		}
+		// printf("----------\n");
+		// printf("t->current:%f\n", t->current);
+		// printf("t->next: %f\n\n\n", t->next);
+		// printf("----------\n");
+
+		struct next_abandon *next_ticket_machine_abandon = get_min_abandon(events.head_ticket_machine);
+		struct next_abandon *next_ticket_office_abandon = get_min_abandon(events.head_ticket_office);
+		struct next_abandon *next_customer_support_abandon = get_min_abandon(events.head_customer_support);
+
+		struct next_job *next_job_ticket_machine = get_min_queue_time(events, number_of_centers[0], state[0].server_occupation, 1);
+		struct next_job *next_job_ticket_office = get_min_queue_time(events, number_of_centers[1], state[1].server_occupation, 2);
+		struct next_job *next_job_customer_support = get_min_queue_time(events, number_of_centers[2], state[2].server_occupation, 3);
+		struct next_job *next_job_security_check = get_min_queue_time(events, number_of_centers[3], state[3].server_occupation, 4);
+		struct next_job *next_job_ticket_gate = get_min_queue_time(events, number_of_centers[4], state[4].server_occupation, 5);
+
+		double min_job_completion_ticket_machine = next_job_ticket_machine->completionTime;
+		double min_job_completion_ticket_office = next_job_ticket_office->completionTime;
+		double min_job_completion_customer_support = next_job_customer_support->completionTime;
+		double min_job_completion_security_check = next_job_security_check->completionTime;
+		double min_job_completion_ticket_gate = next_job_ticket_gate->completionTime;
+
+		t->current = t->next;
+
+		if (t->current == events.user_who_has_purchased_ticket.user_arrival_time)
+		{
+			// printf("*** Evento append_user_arrival_ticket_purchased ***\n");
+			append_user_arrival_ticket_purchased(&events, t, rate, (double)INFINITY);
+		}
+		else if (t->current == events.user_arrival_to_ticket_machine.user_arrival_time)
+		{
+			// printf("*** Evento user_arrivals_ticket_machine ***\n");
+			user_arrivals_ticket_machine(&events, t, &state[0], &loss[0], rate, (double)INFINITY);
+			if (count[0] < B * K)
+			{
+				count[0] += 1;
+				if (count[0] % B == 0)
+				{
+					get_statistics_for_batch(0, count, batch_statistics, sum, mean, batch_time[0], number_of_centers, areas, t, loss);
+					batch_time[0] = t->current;
+				}
+			}
+		}
+		else if (t->current == min_job_completion_ticket_machine)
+		{
+			// printf("*** Evento user_departure_ticket_machine ***\n");
+			user_departure_ticket_machine(&events, t, &state[0], &loss[0], next_job_ticket_machine->serverOffset, rate);
+		}
+		else if (t->current == next_ticket_machine_abandon->abandonTime)
+		{
+			// printf("*** Evento abandon_ticket_machine ***\n");
+			abandon_ticket_machine(&events, &state[0], &loss[0], next_ticket_machine_abandon->user_Id);
+		}
+		else if (t->current == events.user_arrival_to_ticket_office.user_arrival_time)
+		{
+			// printf("*** Evento user_arrivals_ticket_office ***\n");
+			user_arrivals_ticket_office(&events, t, &state[1], &loss[1], rate, (double)INFINITY);
+			if (count[1] < B * K)
+			{
+				count[1] += 1;
+				if (count[1] % B == 0)
+				{
+					get_statistics_for_batch(1, count, batch_statistics, sum, mean, batch_time[1], number_of_centers, areas, t, loss);
+					batch_time[1] = t->current;
+				}
+			}
+		}
+		else if (t->current == min_job_completion_ticket_office)
+		{
+			// printf("*** Evento user_departure_ticket_office ***\n");
+			user_departure_ticket_office(&events, t, &state[1], &loss[1], next_job_ticket_office->serverOffset, rate);
+		}
+		else if (t->current == next_ticket_office_abandon->abandonTime)
+		{
+			// printf("*** Evento abandon_ticket_office ***\n");
+			abandon_ticket_office(&events, &state[1], &loss[1], next_ticket_office_abandon->user_Id);
+		}
+		else if (t->current == events.user_arrival_to_customer_support.user_arrival_time)
+		{
+			// printf("*** Evento user_arrivals_customer_support ***\n");
+			user_arrivals_customer_support(&events, t, &state[2], &loss[2], rate);
+			if (count[2] < B * K)
+			{
+				count[2] += 1;
+				if (count[2] % B == 0)
+				{
+					get_statistics_for_batch(2, count, batch_statistics, sum, mean, batch_time[2], number_of_centers, areas, t, loss);
+					batch_time[2] = t->current;
+				}
+			}
+		}
+		else if (t->current == min_job_completion_customer_support)
+		{
+			// printf("*** Evento user_departure_customer_support ***\n");
+			user_departure_customer_support(&events, t, &state[2], &loss[2], next_job_customer_support->serverOffset, rate);
+		}
+		else if (t->current == next_customer_support_abandon->abandonTime)
+		{
+			// printf("*** Evento abandon_customer_support ***\n");
+			abandon_customer_support(&events, &state[2], &loss[2], next_customer_support_abandon->user_Id);
+		}
+		else if (t->current == events.user_arrival_to_security_check.user_arrival_time)
+		{
+			// printf("*** Evento user_arrivals_security_check ***\n");
+			user_arrivals_security_check(&events, t, &state[3], &loss[3], rate);
+			if (count[3] < B * K)
+			{
+				count[3] += 1;
+				if (count[3] % B == 0)
+				{
+					get_statistics_for_batch(3, count, batch_statistics, sum, mean, batch_time[3], number_of_centers, areas, t, loss);
+					batch_time[3] = t->current;
+				}
+			}
+		}
+		else if (t->current == min_job_completion_security_check)
+		{
+			// printf("*** Evento user_departure_security_check! ***\n");
+			user_departure_security_check(&events, t, &state[3], &loss[3], next_job_security_check->serverOffset);
+		}
+		else if (t->current == events.user_arrival_to_ticket_gate.user_arrival_time)
+		{
+			// printf("*** Evento user_arrivals_ticket_gate ***\n");
+			user_arrivals_ticket_gate(&events, t, &state[4], &loss[4]);
+			if (count[4] < B * K)
+			{
+				count[4] += 1;
+				if (count[4] % B == 0)
+				{
+					get_statistics_for_batch(4, count, batch_statistics, sum, mean, batch_time[4], number_of_centers, areas, t, loss);
+					batch_time[4] = t->current;
+				}
+			}
+		}
+		else if (t->current == min_job_completion_ticket_gate)
+		{
+			// printf("*** Evento user_departure_ticket_gate ***\n");
+			user_departure_ticket_gate(&events, t, &state[4], &loss[4], next_job_ticket_gate->serverOffset);
+		}
+
+		printf("Prima delle free!\n");
+
+		free(next_ticket_machine_abandon);
+		free(next_ticket_office_abandon);
+		free(next_customer_support_abandon);
+
+		free(next_job_ticket_machine);
+		free(next_job_ticket_office);
+		free(next_job_customer_support);
+		free(next_job_security_check);
+		free(next_job_ticket_gate);
+
+		printf("Dopo le free!\n");
+
+		if (t->next == (double)INFINITY)
+		{
+			printf("Something went wrong with simulation...\n");
+			exit(-1);
+		}
+
+		consistency_check_population(&events);
+		last_event = t->current;
+	}
+
+	printf("Dopo il while!\n");
+
+	double **w = (double **)malloc(sizeof(double *) * QUEUE_NUMBER_CENTERS);
+	if (w == NULL)
+	{
+		printf("Error in malloc for w!\n");
+		exit(-1);
+	}
+
+	for (int j = 0; j < QUEUE_NUMBER_CENTERS; j++)
+	{
+		w[j] = (double *)malloc(sizeof(double) * NUMBER_OF_STATISTICS);
+		if (w[j] == NULL)
+		{
+			printf("Error in malloc for w[%d]!\n", j);
+			exit(-1);
+		}
+	}
+
+	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_STATISTICS; j++)
+		{
+			w[i][j] = 0.0;
+		}
+	}
+
+	int n;
+	double u, t, stdv;
+	FILE *fp;
+	FILE **statistics_files = create_statistic_files();
+	char *stat_value;
+
+	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_STATISTICS; j++)
+		{
+			n = count[i] / B;
+			stdv = sqrt(sum[i][j] / n);
+			u = 1.0 - 0.5 * (1.0 - LEVEL_OF_CONFIDENCE); /* interval parameter  */
+			t = idfStudent(n - 1, u);					 /* critical value of t */
+			w[i][j] = t * stdv / sqrt(n - 1);			 /* interval half width */
+
+			printf("INTERVALLO-INFINITO-statistica-%d-centro-%d ------ %10.6f +/- %6.6f\n", j, i, mean[i][j], w[i][j]);
+			fflush(stdout);
+		}
+	}
+
+	// PRINT
+	for (int center = 0; center < QUEUE_NUMBER_CENTERS; center++)
+	{
+		fp = statistics_files[center];
+
+		for (int stat = 0; stat < NUMBER_OF_STATISTICS; stat++)
+		{
+			for (int batch = 0; batch < K; batch++)
+			{
+
+				stat_value = (char *)malloc(sizeof(char) * 30);
+				if (stat_value == NULL)
+				{
+					printf("Error in malloc for stat_value!\n");
+					exit(-1);
+				}
+
+				sprintf(stat_value, "%f;", batch_statistics[center][stat][batch]);
+				fputs(stat_value, fp);
+				free(stat_value);
+
+				fputs("\n", fp);
+			}
+			fputs("\n", fp);
+		}
+	}
+}
+
+void infinite_horizon_simulation(double rate)
+{
+	printf("\n\n INFINITE HORIZON SIMULATION\nINTERARRIVAL = %f | #BATCH = %d\n", rate, B);
+
+	/*
+	Funzioni utilizzate per inizializzare le strutture dati per la simulazione ad orizzonte infinito.
+	*/
+
+	int *number_of_centers = NULL;
+	number_of_centers = (int *)malloc(sizeof(int) * QUEUE_NUMBER_CENTERS);
+	if (number_of_centers == NULL)
+	{
+		printf("Error in first malloc\n");
+		exit(-2);
+	}
+	// config of the network
+	number_of_centers[0] = NUMBER_OF_TICKET_MACHINE_SERVER;
+	number_of_centers[1] = NUMBER_OF_TICKET_OFFICE_SERVER;
+	number_of_centers[2] = NUMBER_OF_CUSTOMER_SUPPORT_SERVER;
+	number_of_centers[3] = NUMBER_OF_SECURITY_CHECK_SERVERS;
+	number_of_centers[4] = NUMBER_OF_TICKET_GATE_SERVERS;
+	long seed[NUM_REPETITION + 1];
+	seed[0] = SEED;
+	infinite_horizon_run(rate, number_of_centers);
 }
 
 int main(int argc, char **argv)
@@ -411,8 +786,6 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 
-	FILE **statitstics_files = create_statistic_files();
-
 	if (is_finite)
 	{
 		finite_horizon_simulation(ARRIVAL_1, STOP_INTERVAL_1, NUM_REPETITION, 1);
@@ -421,7 +794,7 @@ int main(int argc, char **argv)
 	}
 	else if (!is_finite)
 	{
-		infinite_horizon_simulation(NUM_REPETITION);
+		infinite_horizon_simulation(ARRIVAL_1);
 	}
 	return 0;
 }

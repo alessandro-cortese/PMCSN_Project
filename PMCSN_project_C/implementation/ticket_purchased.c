@@ -31,11 +31,11 @@ void append_user_arrival_ticket_purchased(struct event_list *events, struct time
 {
     count_id++;
     events->user_who_has_purchased_ticket.user_arrival_time = get_user_arrival_to_ticket_purchased(time->current, rate);
-    if (events->user_who_has_purchased_ticket.user_arrival_time > stop)
+    if (stop != (double)INFINITY && events->user_who_has_purchased_ticket.user_arrival_time > stop)
     {
         events->user_who_has_purchased_ticket.user_arrival_time = (double)INFINITY;
         events->user_who_has_purchased_ticket.is_user_arrival_active = false;
-        //printf("Stop arrival to ticket purchased!\n");
+        // printf("Stop arrival to ticket purchased!\n");
     }
     else
     {
@@ -47,7 +47,7 @@ void append_user_arrival_ticket_purchased(struct event_list *events, struct time
         }
         tail_job->id = count_id;
         tail_job->arrival_time = time->current;
-        
+
         enqueue_node(&events->head_ticket_purchased, &events->tail_ticket_purchased, tail_job);
         routing_ticket_purchased(events, time, rate);
     }

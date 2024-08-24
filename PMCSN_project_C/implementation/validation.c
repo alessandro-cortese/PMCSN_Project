@@ -106,7 +106,7 @@ FILE **create_statistic_files()
         }
 
         // Crea il nome del file
-        sprintf(filename, "%s.csv", centers[i]);
+        sprintf(filename, "./results/infinite/%s.csv", centers[i]);
         file_per_centers = fopen(filename, "w");
         if (file_per_centers == NULL)
         {

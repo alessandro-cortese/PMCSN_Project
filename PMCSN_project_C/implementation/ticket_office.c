@@ -33,7 +33,7 @@ void user_arrivals_ticket_office(struct event_list *events, struct time *time, s
 
 	time->last[1] = time->current;
 
-	if (events->user_arrival_to_ticket_office.user_arrival_time > stop)
+	if (stop != (double)INFINITY && events->user_arrival_to_ticket_office.user_arrival_time > stop)
 	{
 		events->user_arrival_to_ticket_office.user_arrival_time = (double)INFINITY;
 		events->user_arrival_to_ticket_office.is_user_arrival_active = false;

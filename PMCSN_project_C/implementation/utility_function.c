@@ -440,11 +440,107 @@ struct queue_node *dequeue_node(struct queue_node **head)
     return job;
 }
 
+// void write_rho_on_csv(int time_slot, struct area *area, double current_time)
+// {
+// 	FILE *csv_file;
+// 	char *filename;
+// 	filename = (char *)malloc(sizeof(char) * 100);
+// 	if (!filename)
+// 	{
+// 		printf("Error in malloc in write rho on csv!\n");
+// 		exit(-1);
+// 	}
+// 	const char *centers[] = {
+// 		"ticket_machine",
+// 		"ticket_office",
+// 		"customer_support",
+// 		"security_check",
+// 		"ticket_gate"};
+
+// 	snprintf(filename, 100, "./results/finite/rho/finite_horizion_simulation_time_slot_%d.csv", time_slot);
+// 	csv_file = fopen(filename, "w+");
+// 	if (csv_file == NULL)
+// 	{
+// 		printf("Error in fopen\n");
+// 		exit(-1);
+// 	}
+// 	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+// 	{
+// 		double rho = 0.0;
+// 		rho = area[i].service / (current_time * NUMBER_OF_TICKET_MACHINE_SERVER);
+// 		fprintf(csv_file, "%2.6f\n", rho);
+// 	}
+// 	fclose(csv_file);
+// }
+
+void get_statistics_for_batch(int center_index, int *count, double ***batch_statistics, double **sum, double **mean, double diff, int *number_of_centers, struct area *area, struct time *time, struct loss *loss)
+{
+    double diffWelford;
+
+    //printf("Entro\n");
+
+    // utilizzazione
+    batch_statistics[center_index][0][(count[center_index] / B) - 1] = area[center_index].service / ((time->current - diff) * number_of_centers[center_index]);
+
+    // popolazione media nelle code
+    batch_statistics[center_index][1][(count[center_index] / B) - 1] = area[center_index].queue / (time->current - diff);
+
+    // popolazione media nel centro
+    batch_statistics[center_index][2][(count[center_index] / B) - 1] = area[center_index].node / (time->current - diff);
+
+    // tempo di servizio medio
+    batch_statistics[center_index][3][(count[center_index] / B) - 1] = area[center_index].service / loss[center_index].index_user;
+
+    // tempo di attesa medio nella coda
+    batch_statistics[center_index][4][(count[center_index] / B) - 1] = area[center_index].queue / loss[center_index].index_user;
+
+    // tempo di risposta medio
+    batch_statistics[center_index][5][(count[center_index] / B) - 1] = area[center_index].node / loss[center_index].index_user;
+
+    // tempo di interarrivo
+    batch_statistics[center_index][6][(count[center_index] / B) - 1] = (time->last[center_index] - diff) / loss[0].index_user;
+
+    // numero arrivi utenti
+    batch_statistics[center_index][7][(count[center_index] / B) - 1] = (double)loss[center_index].index_user;
+
+    int n = count[center_index] / B;
+
+    for (int i = 0; i < NUMBER_OF_STATISTICS; i++)
+    {
+        diffWelford = batch_statistics[center_index][i][(count[center_index] / B) - 1] - mean[center_index][i];
+        sum[center_index][i] += diffWelford * diffWelford * (n - 1.0) / n;
+        mean[center_index][i] += diffWelford / n;
+
+        batch_statistics[center_index][i][(count[center_index] / B) - 1] = mean[center_index][i];
+    }
+
+    /*
+    Resete dei valori dell'area del centro
+    */
+
+    area[center_index].service = 0.0;
+    area[center_index].queue = 0.0;
+    area[center_index].node = 0.0;
+
+    /*
+    TODO: Dobbiamo capire come fare perché dobbiamo fare la simulazione ad orizzonte infinito non per
+          singola fascia oraria ma per le tre insieme, ma ci dobbiamo salvare i dati relatvi all'esecuzione
+          della fascia precendente se sono nella seconda in poi...
+    */
+
+    // al[centerIndex].prev_index_a = al[centerIndex].index_a;
+    // al[centerIndex].prev_index_f = al[centerIndex].index_f;
+    // al[centerIndex].prev_numLoss_f = al[centerIndex].numLoss_f;
+    // al[centerIndex].prev_compl_a = al[centerIndex].compl_a;
+    // al[centerIndex].prev_compl_f = al[centerIndex].compl_f;
+}
+
 void verify(struct area *a, struct loss *loss, double t, struct time *time)
 {
 
     // printf("time: %f\n", t);
 
+    // utilizzazione
     double rho_1 = a[0].service / (t * NUMBER_OF_TICKET_MACHINE_SERVER);
     double rho_2 = a[1].service / (t * NUMBER_OF_TICKET_OFFICE_SERVER);
     double rho_3 = a[2].service / (t * NUMBER_OF_CUSTOMER_SUPPORT_SERVER);
@@ -493,7 +589,7 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double interArr4 = time->last[3] / (loss[3].index_user);
     double interArr5 = time->last[4] / (loss[4].index_user);
 
-    // numero arrivi famiglie
+    // numero arrivi utenti
     double fam1 = loss[0].index_user;
     double fam2 = loss[1].index_user;
     double fam3 = loss[2].index_user;
