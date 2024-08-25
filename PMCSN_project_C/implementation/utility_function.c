@@ -216,8 +216,6 @@ double get_minimum_time(struct event_list events, struct states *state, int *n)
     times[8] = events.user_who_has_purchased_ticket.user_arrival_time;
     times[9] = events.user_arrival_to_ticket_machine.user_arrival_time;
     times[10] = events.user_arrival_to_ticket_office.user_arrival_time;
-    times[11] = events.user_arrival_to_customer_support.user_arrival_time;
-    times[12] = events.user_arrival_to_ticket_gate.user_arrival_time;
 
     free(abandon_ticket_machine);
     free(abandon_ticket_office);
@@ -244,14 +242,30 @@ int get_total_busy_servers(int num_servers, int *server_occupation)
     return count;
 }
 
-void feedback(struct event_list *events, struct time *time, double rate)
+void feedback(struct event_list *events, struct time *time, double rate, bool infinite)
 {
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
     user_arrivals_ticket_office_feedback(events, time, &state[1], &loss[1], rate);
+    if (infinite)
+        {
+            struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
+            struct area *areas = get_area_address();
+            int *number_of_centers = get_address_number_of_centers();
+
+            if (inf_horizon_stats->sum_arrivals[1] < B * K)
+            {
+                inf_horizon_stats->sum_arrivals[1] += 1;
+                if (inf_horizon_stats->sum_arrivals[1] % B == 0)
+                {
+                    get_statistics_for_batch(1, inf_horizon_stats, number_of_centers, areas, time, loss[1]);
+                    inf_horizon_stats->batch_time[1] = time->current;
+                }
+            }
+        }
 }
 
-void routing_ticket_purchased(struct event_list *events, struct time *time, double rate)
+void routing_ticket_purchased(struct event_list *events, struct time *time, double rate, bool infinite)
 {
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
@@ -260,9 +274,27 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
     {
         // printf("Route to customer support!\n");
         struct queue_node *job;
+
         job = dequeue_node(&events->head_ticket_purchased);
         enqueue_node(&events->head_queue_customer_support, &events->tail_queue_customer_support, job);
         user_arrivals_customer_support(events, time, &state[2], &loss[2], rate);
+
+        if (infinite)
+        {
+            struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
+            struct area *areas = get_area_address();
+            int *number_of_centers = get_address_number_of_centers();
+
+            if (inf_horizon_stats->sum_arrivals[2] < B * K)
+            {
+                inf_horizon_stats->sum_arrivals[2] += 1;
+                if (inf_horizon_stats->sum_arrivals[2] % B == 0)
+                {
+                    get_statistics_for_batch(2, inf_horizon_stats, number_of_centers, areas, time, loss[2]);
+                    inf_horizon_stats->batch_time[2] = time->current;
+                }
+            }
+        }
     }
     else
     {
@@ -272,11 +304,11 @@ void routing_ticket_purchased(struct event_list *events, struct time *time, doub
 
         job = dequeue_node(&events->head_ticket_purchased);
         enqueue_node(&events->head_user_to_security_check, &events->tail_user_to_security_check, job);
-        routing_security_check(events, time, rate);
+        routing_security_check(events, time, rate, infinite);
     }
 }
 
-void routing_security_check(struct event_list *events, struct time *time, double rate)
+void routing_security_check(struct event_list *events, struct time *time, double rate, bool infinite)
 {
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
@@ -288,6 +320,22 @@ void routing_security_check(struct event_list *events, struct time *time, double
         job = dequeue_node(&events->head_user_to_security_check);
         enqueue_node(&events->head_security_check_queue, &events->tail_security_check_queue, job);
         user_arrivals_security_check(events, time, &state[3], &loss[3], rate);
+        if (infinite)
+        {
+            struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
+            struct area *areas = get_area_address();
+            int *number_of_centers = get_address_number_of_centers();
+
+            if (inf_horizon_stats->sum_arrivals[3] < B * K)
+            {
+                inf_horizon_stats->sum_arrivals[3] += 1;
+                if (inf_horizon_stats->sum_arrivals[3] % B == 0)
+                {
+                    get_statistics_for_batch(3, inf_horizon_stats, number_of_centers, areas, time, loss[3]);
+                    inf_horizon_stats->batch_time[3] = time->current;
+                }
+            }
+        }
     }
     else
     {
@@ -296,13 +344,45 @@ void routing_security_check(struct event_list *events, struct time *time, double
         job = dequeue_node(&events->head_user_to_security_check);
         enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
         user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
+        if (infinite)
+        {
+            struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
+            struct area *areas = get_area_address();
+            int *number_of_centers = get_address_number_of_centers();
+
+            if (inf_horizon_stats->sum_arrivals[4] < B * K)
+            {
+                inf_horizon_stats->sum_arrivals[4] += 1;
+                if (inf_horizon_stats->sum_arrivals[4] % B == 0)
+                {
+                    get_statistics_for_batch(4, inf_horizon_stats, number_of_centers, areas, time, loss[4]);
+                    inf_horizon_stats->batch_time[4] = time->current;
+                }
+            }
+        }
     }
 }
-void routing_ticket_gate(struct event_list *events, struct time *time)
+void routing_ticket_gate(struct event_list *events, struct time *time, bool infinite)
 {
     struct states *state = get_first_state_address();
     struct loss *loss = get_first_loss();
     user_arrivals_ticket_gate(events, time, &state[4], &loss[4]);
+    if (infinite)
+    {
+        struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
+        struct area *areas = get_area_address();
+        int *number_of_centers = get_address_number_of_centers();
+
+        if (inf_horizon_stats->sum_arrivals[4] < B * K)
+        {
+            inf_horizon_stats->sum_arrivals[4] += 1;
+            if (inf_horizon_stats->sum_arrivals[4] % B == 0)
+            {
+                get_statistics_for_batch(4, inf_horizon_stats, number_of_centers, areas, time, loss[4]);
+                inf_horizon_stats->batch_time[4] = time->current;
+            }
+        }
+    }
 }
 void consistency_check_population(struct event_list *events)
 {
@@ -473,45 +553,45 @@ struct queue_node *dequeue_node(struct queue_node **head)
 // 	fclose(csv_file);
 // }
 
-void get_statistics_for_batch(int center_index, int *count, double ***batch_statistics, double **sum, double **mean, double diff, int *number_of_centers, struct area *area, struct time *time, struct loss *loss)
+void get_statistics_for_batch(int center_index, struct infinite_horizon_stats *inf_horizon_stats, int *number_of_centers, struct area *area, struct time *time, struct loss loss)
 {
     double diffWelford;
 
-    //printf("Entro\n");
+    // printf("Entro\n");
 
     // utilizzazione
-    batch_statistics[center_index][0][(count[center_index] / B) - 1] = area[center_index].service / ((time->current - diff) * number_of_centers[center_index]);
+    inf_horizon_stats->batch_statistics[center_index][0][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = area[center_index].service / ((time->current - inf_horizon_stats->batch_time[center_index]) * number_of_centers[center_index]);
 
     // popolazione media nelle code
-    batch_statistics[center_index][1][(count[center_index] / B) - 1] = area[center_index].queue / (time->current - diff);
+    inf_horizon_stats->batch_statistics[center_index][1][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = area[center_index].queue / (time->current - inf_horizon_stats->batch_time[center_index]);
 
     // popolazione media nel centro
-    batch_statistics[center_index][2][(count[center_index] / B) - 1] = area[center_index].node / (time->current - diff);
+    inf_horizon_stats->batch_statistics[center_index][2][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = area[center_index].node / (time->current - inf_horizon_stats->batch_time[center_index]);
 
     // tempo di servizio medio
-    batch_statistics[center_index][3][(count[center_index] / B) - 1] = area[center_index].service / loss[center_index].index_user;
+    inf_horizon_stats->batch_statistics[center_index][3][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = area[center_index].service / loss.index_user;
 
     // tempo di attesa medio nella coda
-    batch_statistics[center_index][4][(count[center_index] / B) - 1] = area[center_index].queue / loss[center_index].index_user;
+    inf_horizon_stats->batch_statistics[center_index][4][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = area[center_index].queue / loss.index_user;
 
     // tempo di risposta medio
-    batch_statistics[center_index][5][(count[center_index] / B) - 1] = area[center_index].node / loss[center_index].index_user;
+    inf_horizon_stats->batch_statistics[center_index][5][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = area[center_index].node / loss.index_user;
 
     // tempo di interarrivo
-    batch_statistics[center_index][6][(count[center_index] / B) - 1] = (time->last[center_index] - diff) / loss[0].index_user;
+    inf_horizon_stats->batch_statistics[center_index][6][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = (time->last[center_index] - inf_horizon_stats->batch_time[center_index]) / loss.index_user;
 
     // numero arrivi utenti
-    batch_statistics[center_index][7][(count[center_index] / B) - 1] = (double)loss[center_index].index_user;
+    inf_horizon_stats->batch_statistics[center_index][7][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = (double)loss.index_user;
 
-    int n = count[center_index] / B;
+    int n = inf_horizon_stats->sum_arrivals[center_index] / B;
 
     for (int i = 0; i < NUMBER_OF_STATISTICS; i++)
     {
-        diffWelford = batch_statistics[center_index][i][(count[center_index] / B) - 1] - mean[center_index][i];
-        sum[center_index][i] += diffWelford * diffWelford * (n - 1.0) / n;
-        mean[center_index][i] += diffWelford / n;
+        diffWelford = inf_horizon_stats->batch_statistics[center_index][i][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] - inf_horizon_stats->mean[center_index][i];
+        inf_horizon_stats->sum[center_index][i] += diffWelford * diffWelford * (n - 1.0) / n;
+        inf_horizon_stats->mean[center_index][i] += diffWelford / n;
 
-        batch_statistics[center_index][i][(count[center_index] / B) - 1] = mean[center_index][i];
+        inf_horizon_stats->batch_statistics[center_index][i][(inf_horizon_stats->sum_arrivals[center_index] / B) - 1] = inf_horizon_stats->mean[center_index][i];
     }
 
     /*

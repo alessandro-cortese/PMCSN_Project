@@ -79,7 +79,7 @@ void user_arrivals_customer_support(struct event_list *events, struct time *time
 	}
 }
 
-void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
+void user_departure_customer_support(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate, bool infinite)
 {
 	state->server_count--;
 	struct queue_node *tail_job = (struct queue_node *)malloc(sizeof(struct queue_node));
@@ -132,12 +132,12 @@ void user_departure_customer_support(struct event_list *events, struct time *tim
 		conto dei dati dei job che arrivato.
 		*/
 		free(tail_job);
-		feedback(events, time, rate);
+		feedback(events, time, rate, infinite);
 	}
 	else
 	{
 		enqueue_node(&events->head_user_to_security_check, &events->tail_user_to_security_check, tail_job);
-		routing_security_check(events, time, rate);
+		routing_security_check(events, time, rate, infinite);
 	}
 	state->population = state->queue_count + state->server_count;
 }

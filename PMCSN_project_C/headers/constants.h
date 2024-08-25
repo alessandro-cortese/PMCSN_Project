@@ -19,7 +19,7 @@
 #define SAMPLING 1
 
 // Dimension of array of time
-#define DIM 13
+#define DIM 11
 
 // Number of servers of ticket machine service node
 #define NUMBER_OF_TICKET_MACHINE_SERVER 10

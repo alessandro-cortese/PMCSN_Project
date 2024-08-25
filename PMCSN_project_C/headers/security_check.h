@@ -13,4 +13,4 @@
 double get_security_check_departure(double start);
 // double get_abandon_security_check(double arrival);
 void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate);
-void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset);
+void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, bool infinite);

@@ -63,7 +63,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	state->population = state->queue_count + state->server_count;
 }
 
-void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset)
+void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, bool infinite)
 {
 	// If the population is bigger of 0 then update server completion time,
 	// otherwise reset data of the server.
@@ -111,7 +111,7 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		job->arrival_time = time->current;
 
 		enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
-		routing_ticket_gate(events, time);
+		routing_ticket_gate(events, time, infinite);
 	}
 	state->population = state->queue_count + state->server_count;
 }

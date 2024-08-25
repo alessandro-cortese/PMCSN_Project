@@ -88,7 +88,7 @@ void user_arrivals_ticket_machine(struct event_list *events, struct time *time, 
 	}
 }
 
-void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate)
+void user_departure_ticket_machine(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, double rate, bool infinite)
 {
 	state->server_count -= 1;
 
@@ -117,7 +117,7 @@ void user_departure_ticket_machine(struct event_list *events, struct time *time,
 
 	enqueue_node(&events->head_ticket_purchased, &events->tail_ticket_purchased, tail_job);
 	state->population = state->queue_count + state->server_count;
-	routing_ticket_purchased(events, time, rate);
+	routing_ticket_purchased(events, time, rate, infinite);
 }
 
 void abandon_ticket_machine(struct event_list *events, struct states *state, struct loss *loss, int job_id)
