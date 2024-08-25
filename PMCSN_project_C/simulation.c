@@ -767,6 +767,7 @@ int main(int argc, char **argv)
 	else if (!is_finite)
 	{
 		infinite_horizon_simulation(ARRIVAL_1);
+		
 	}
 	return 0;
 }
