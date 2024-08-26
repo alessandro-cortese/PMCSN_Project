@@ -9,9 +9,9 @@
 #define NUM_REPETITION 5
 
 // Number of batch
-#define K 128
+#define K 64
 // Batch size
-#define B 1024
+#define B 512
 
 #define SEED 123456789
 

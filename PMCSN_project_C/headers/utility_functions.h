@@ -20,6 +20,6 @@ void consistency_check_population(struct event_list *events);
 void enqueue_node(struct queue_node **head, struct queue_node **tail, struct queue_node *job);
 void dequeue_node_free_node(struct queue_node **head);
 struct queue_node *dequeue_node(struct queue_node **head);
-void print_progress_bar(double part, double total, double oldPart);
+void print_progress_bar(char *s, double part, double total, double oldPart);
 
 #endif

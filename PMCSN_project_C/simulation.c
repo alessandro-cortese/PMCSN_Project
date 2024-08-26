@@ -29,6 +29,7 @@ struct time *t;
 double last_event;
 struct loss loss[5];
 int *number_of_centers;
+bool remaining[5] = {false};
 
 struct infinite_horizon_stats inf_horizon_stats;
 
@@ -483,12 +484,12 @@ void finite_horizon_simulation(double rate, double stop, int num_repetition, int
 		finite_horizon_run(rate, stop, repetition, time_slot);
 		SelectStream(300);
 		GetSeed(&seed[repetition + 1]);
-		print_progress_bar(repetition + 1, NUM_REPETITION, repetition);
+		print_progress_bar("Simulation progress", repetition + 1, NUM_REPETITION, repetition);
 		sleep(1);
 	}
 
 	// write_rho_on_csv(time_slot, areas, t->current);
-	print_progress_bar(num_repetition, NUM_REPETITION, num_repetition - 1);
+	print_progress_bar("Simulation progress", num_repetition, NUM_REPETITION, num_repetition - 1);
 	printf("\n\nEND FINITE HORIZON SIMULATION\n");
 }
 
@@ -502,19 +503,48 @@ void infinite_horizon_run(double rate)
 	initializeEventList(number_of_centers, rate);
 	initialize_infinite_horizon_stats();
 
-	int remaining = 0;
-
+	// int remaining = 0;
+	int batch_counter_ticket_machine = 0; // Conta i batch completati
+	int batch_counter_ticket_office = 0;
+	int batch_counter_customer_support = 0;
+	int batch_counter_security_check = 0;
+	int batch_counter_ticket_gate = 0;
 	printf("\n\nINFINITE HORIZON SIMULATION!\n");
-	while (true)
+	while (/*remaining[0] == false && remaining[1] == false && remaining[2] == false &&
+		   remaining[3] == false && remaining[4] == false*/
+		   true)
 	{
 
-		remaining = 0;
+		// remaining = 0;
+		// for (int i = 0; i < 5; i++)
+		// {
+		// 	if (inf_horizon_stats.sum_arrivals[i] < K * B)
+		// 		remaining++;
+		// }
+		// if (remaining == 0)
+		// 	break;
+
+		// for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+		// {
+		// 	if (inf_horizon_stats.sum_arrivals[i] == K * B)
+		// 		remaining[i] = true;
+		// }
+		bool all_centers_completed = true;
+
 		for (int i = 0; i < 5; i++)
 		{
 			if (inf_horizon_stats.sum_arrivals[i] < K * B)
-				remaining++;
+			{
+				remaining[i] = false;
+				all_centers_completed = false;
+			}
+			else
+			{
+				remaining[i] = true;
+			}
 		}
-		if (remaining == 0)
+
+		if (all_centers_completed)
 			break;
 
 		t->next = get_minimum_time(events, state, number_of_centers);
@@ -645,9 +675,59 @@ void infinite_horizon_run(double rate)
 
 		consistency_check_population(&events);
 		last_event = t->current;
-	}
 
-	printf("Dopo il while!\n");
+		// int batch_completed_ticket_machine = inf_horizon_stats.sum_arrivals[0] / B;
+		// if (batch_counter_ticket_machine < batch_completed_ticket_machine)
+		// {
+		// 	batch_counter_ticket_machine = batch_completed_ticket_machine;
+
+		// 	print_progress_bar("ticket machine", batch_counter_ticket_machine, K, batch_counter_ticket_machine + 1);
+		// }
+
+		// int batch_completed_ticket_office = inf_horizon_stats.sum_arrivals[1] / B;
+		// if (batch_counter_ticket_office < batch_completed_ticket_office)
+		// {
+		// 	batch_counter_ticket_office = batch_completed_ticket_office;
+
+		// 	print_progress_bar("ticket office", batch_counter_ticket_office, K, batch_counter_ticket_office + 1);
+		// }
+
+		// int batch_completed_customer_support = inf_horizon_stats.sum_arrivals[2] / B;
+		// if (batch_counter_customer_support < batch_completed_customer_support)
+		// {
+		// 	batch_counter_customer_support = batch_completed_customer_support;
+
+		// 	print_progress_bar("customer support", batch_counter_customer_support, K, batch_counter_customer_support + 1);
+		// }
+
+		int batch_completed_security_check = inf_horizon_stats.sum_arrivals[3] / B;
+		if (batch_counter_security_check < batch_completed_security_check)
+		{
+			batch_counter_security_check = batch_completed_security_check;
+			print_progress_bar("security check", batch_counter_security_check, K, batch_counter_security_check + 1);
+		}
+
+		// int batch_completed_ticket_gate = inf_horizon_stats.sum_arrivals[4] / B;
+		// if (batch_counter_ticket_gate < batch_completed_ticket_gate)
+		// {
+		// 	batch_counter_ticket_gate = batch_completed_ticket_gate;
+
+		// 	print_progress_bar("ticket gate", batch_counter_ticket_gate, K, batch_counter_ticket_gate + 1);
+		// }
+
+		// if (batch_counter == 128)
+		// {
+		// 	printf("all centers completed = %d\n", all_centers_completed);
+		// 	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
+		// 	{
+		// 		printf("remaining[%d] is %d\n", i, remaining[i]);
+		// 		printf("inf_horizon_stats.sum_arrivals[%d] is %d\n", i, inf_horizon_stats.sum_arrivals[i]);
+		// 	}
+		// 	// exit(-1);
+		// }
+		// print_progress_bar(i, K, i + 1);
+		//  sleep(1);
+	}
 
 	double **w = (double **)malloc(sizeof(double *) * QUEUE_NUMBER_CENTERS);
 	if (w == NULL)
@@ -680,6 +760,7 @@ void infinite_horizon_run(double rate)
 	FILE **statistics_files = create_statistic_files();
 	char *stat_value;
 
+	puts("");
 	for (int i = 0; i < QUEUE_NUMBER_CENTERS; i++)
 	{
 		for (int j = 0; j < NUMBER_OF_STATISTICS; j++)
@@ -766,8 +847,12 @@ int main(int argc, char **argv)
 	}
 	else if (!is_finite)
 	{
-		infinite_horizon_simulation(ARRIVAL_1);
-		
+		if (interval == 1)
+			infinite_horizon_simulation(ARRIVAL_1);
+		else if (interval == 2)
+			infinite_horizon_simulation(ARRIVAL_2);
+		else if (interval == 3)
+			infinite_horizon_simulation(ARRIVAL_3);
 	}
 	return 0;
 }

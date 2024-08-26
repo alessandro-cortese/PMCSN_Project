@@ -248,21 +248,21 @@ void feedback(struct event_list *events, struct time *time, double rate, bool in
     struct loss *loss = get_first_loss();
     user_arrivals_ticket_office_feedback(events, time, &state[1], &loss[1], rate);
     if (infinite)
-        {
-            struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
-            struct area *areas = get_area_address();
-            int *number_of_centers = get_address_number_of_centers();
+    {
+        struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
+        struct area *areas = get_area_address();
+        int *number_of_centers = get_address_number_of_centers();
 
-            if (inf_horizon_stats->sum_arrivals[1] < B * K)
+        if (inf_horizon_stats->sum_arrivals[1] < B * K)
+        {
+            inf_horizon_stats->sum_arrivals[1] += 1;
+            if (inf_horizon_stats->sum_arrivals[1] % B == 0)
             {
-                inf_horizon_stats->sum_arrivals[1] += 1;
-                if (inf_horizon_stats->sum_arrivals[1] % B == 0)
-                {
-                    get_statistics_for_batch(1, inf_horizon_stats, number_of_centers, areas, time, loss[1]);
-                    inf_horizon_stats->batch_time[1] = time->current;
-                }
+                get_statistics_for_batch(1, inf_horizon_stats, number_of_centers, areas, time, loss[1]);
+                inf_horizon_stats->batch_time[1] = time->current;
             }
         }
+    }
 }
 
 void routing_ticket_purchased(struct event_list *events, struct time *time, double rate, bool infinite)
@@ -676,58 +676,58 @@ void verify(struct area *a, struct loss *loss, double t, struct time *time)
     double fam4 = loss[3].index_user;
     double fam5 = loss[4].index_user;
 
-    // printf("Ticket Machine\n");
-    // printf("rho_1 = %f\n", rho_1);
-    // printf("E(N_q1) = %f\n", q_1);
-    // printf("E(n_1) = %f\n", n_1);
-    // printf("E(S_1) = %f\n", serv0);
-    // printf("E(Tq_1) = %.6f\n", delay1);
-    // printf("E(T_s1) = %f\n", wait1);
-    // printf("interArr1 = %f\n", interArr1);
-    // printf("loss 1 = %f\n\n", fam1);
+    printf("Ticket Machine\n");
+    printf("rho_1 = %f\n", rho_1);
+    printf("E(N_q1) = %f\n", q_1);
+    printf("E(n_1) = %f\n", n_1);
+    printf("E(S_1) = %f\n", serv0);
+    printf("E(Tq_1) = %.6f\n", delay1);
+    printf("E(T_s1) = %f\n", wait1);
+    printf("interArr1 = %f\n", interArr1);
+    printf("loss 1 = %f\n\n", fam1);
 
-    // printf("Ticket Office\n");
-    // printf("rho_2 = %f\n", rho_2);
-    // printf("E(N_q2) = %f\n", q_2);
-    // printf("E(n_2) = %f\n", n_2);
-    // printf("E(S_2) = %f\n", serv1);
-    // printf("E(Tq_2) = %.6f\n", delay2);
-    // printf("E(T_s2) = %f\n", wait2);
-    // printf("interArr2 = %f\n", interArr2);
-    // printf("loss 2 = %f\n\n", fam2);
+    printf("Ticket Office\n");
+    printf("rho_2 = %f\n", rho_2);
+    printf("E(N_q2) = %f\n", q_2);
+    printf("E(n_2) = %f\n", n_2);
+    printf("E(S_2) = %f\n", serv1);
+    printf("E(Tq_2) = %.6f\n", delay2);
+    printf("E(T_s2) = %f\n", wait2);
+    printf("interArr2 = %f\n", interArr2);
+    printf("loss 2 = %f\n\n", fam2);
 
-    // printf("Customer Support\n");
-    // printf("rho_3 = %f\n", rho_3);
-    // printf("E(N_q3) = %f\n", q_3);
-    // printf("E(n_3) = %f\n", n_3);
-    // printf("E(S_3) = %f\n", serv2);
-    // printf("E(Tq_3) = %.6f\n", delay3);
-    // printf("E(T_s3) = %f\n", wait3);
-    // printf("interArr3 = %f\n", interArr3);
-    // printf("loss 3 = %f\n\n", fam3);
+    printf("Customer Support\n");
+    printf("rho_3 = %f\n", rho_3);
+    printf("E(N_q3) = %f\n", q_3);
+    printf("E(n_3) = %f\n", n_3);
+    printf("E(S_3) = %f\n", serv2);
+    printf("E(Tq_3) = %.6f\n", delay3);
+    printf("E(T_s3) = %f\n", wait3);
+    printf("interArr3 = %f\n", interArr3);
+    printf("loss 3 = %f\n\n", fam3);
 
-    // printf("Security Check\n");
-    // printf("rho_4 = %f\n", rho_4);
-    // printf("E(N_q4) = %f\n", q_4);
-    // printf("E(n_4) = %f\n", n_4);
-    // printf("E(S_4) = %f\n", serv3);
-    // printf("E(Tq_4) = %.6f\n", delay4);
-    // printf("E(T_s4) = %f\n", wait4);
-    // printf("interArr4 = %f\n", interArr4);
-    // printf("loss 4 = %f\n\n", fam4);
+    printf("Security Check\n");
+    printf("rho_4 = %f\n", rho_4);
+    printf("E(N_q4) = %f\n", q_4);
+    printf("E(n_4) = %f\n", n_4);
+    printf("E(S_4) = %f\n", serv3);
+    printf("E(Tq_4) = %.6f\n", delay4);
+    printf("E(T_s4) = %f\n", wait4);
+    printf("interArr4 = %f\n", interArr4);
+    printf("loss 4 = %f\n\n", fam4);
 
-    // printf("Ticket Gate\n");
-    // printf("rho_5 = %f\n", rho_5);
-    // printf("E(N_q5) = %f\n", q_5);
-    // printf("E(n_5) = %f\n", n_5);
-    // printf("E(S_5) = %f\n", serv4);
-    // printf("E(Tq_5) = %.6f\n", delay5);
-    // printf("E(T_s5) = %f\n", wait5);
-    // printf("interArr5 = %f\n", interArr5);
-    // printf("loss 5 = %f\n\n", fam5);
+    printf("Ticket Gate\n");
+    printf("rho_5 = %f\n", rho_5);
+    printf("E(N_q5) = %f\n", q_5);
+    printf("E(n_5) = %f\n", n_5);
+    printf("E(S_5) = %f\n", serv4);
+    printf("E(Tq_5) = %.6f\n", delay5);
+    printf("E(T_s5) = %f\n", wait5);
+    printf("interArr5 = %f\n", interArr5);
+    printf("loss 5 = %f\n\n", fam5);
 }
 
-void print_progress_bar(double part, double total, double oldPart)
+void print_progress_bar(char *s, double part, double total, double oldPart)
 {
     double percentage = (part / total) * 100;
     double oldPercentage = (oldPart / total) * 100;
@@ -743,7 +743,7 @@ void print_progress_bar(double part, double total, double oldPart)
         percentage = 100;
     }
 
-    printf("\rSimulation Progress: |");
+    printf("\r %s: |", s);
 
     // Stampa blocchi pieni in base alla percentuale completata
     for (int i = 0; i <= percentage / 2; i++)

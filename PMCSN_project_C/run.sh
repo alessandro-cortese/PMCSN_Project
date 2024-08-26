@@ -10,7 +10,7 @@ gcc -c ./implementation/ticket_purchased.c
 gcc -c ./implementation/validation.c
 gcc -c simulation.c
 gcc simulation.o ticket_machine.o ticket_office.o customer_support.o security_check.o ticket_gate.o rngs.o rvms.o utility_function.o ticket_purchased.o validation.o -o simulation -lm 
-./simulation infinite 1  
+./simulation infinite 2  
 rm simulation
 rm simulation.o
 rm ticket_machine.o
