@@ -8,42 +8,42 @@ def single_plotter(center, i):
 
     if i == 0:
         start = 0
-        end = 128
+        end = 64
         x_name = "rho"
         title = "Utilizzazione " + center.replace('_', ' ')
     elif i == 1:
-        start = 130
-        end = 257
+        start = 66
+        end = 129
         x_name = "E[Nq]"
         title = "Numero di Jobs in coda " + center.replace('_', ' ')
     elif i == 2:
-        start = 259
-        end = 386
+        start = 131
+        end = 194
         x_name = "E[N]"
         title = "Numero di Jobs nel servizio " + center.replace('_', ' ')
     elif i == 3:
-        start = 388
-        end = 515
+        start = 196
+        end = 259
         x_name = "E[S]"
         title = "Tempo medio di servizio " + center.replace('_', ' ')
     elif i == 4:
-        start = 517
-        end = 644
+        start = 261
+        end = 324
         x_name = "E[Tq]"
         title = "Tempo medio di attesa in coda " + center.replace('_', ' ')
     elif i == 5:
-        start = 646
-        end = 773
+        start = 326
+        end = 389
         x_name = "E[Ts]"
         title = "Tempo medio di servizio " + center.replace('_', ' ')
     elif i == 6:
-        start = 775
-        end = 902
+        start = 391
+        end = 454
         x_name = "interArrival"
         title = "Interarrivi " + center.replace('_', ' ')
     elif i == 7:
-        start = 904
-        end = 1031
+        start = 456
+        end = 519
         x_name = "Arrivi"
         title = "Arrivi degli Utenti " + center.replace('_', ' ')
 
@@ -51,8 +51,7 @@ def single_plotter(center, i):
     with open("../results/infinite/" + str(center) + ".csv", 'r') as file:
         righe = file.readlines()[start:end]
 
-    current_stats = [float(riga.replace(';', '').replace('\n', '').replace(',', '.')) for riga in righe]
-
+    current_stats = [float(riga.replace(';', '').replace('\n', '')) for riga in righe]
 
     #print(current_stats)
 

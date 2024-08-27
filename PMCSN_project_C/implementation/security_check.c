@@ -14,7 +14,7 @@ double get_security_check_departure(double start)
 	return departure;
 }
 
-void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate)
+void user_arrivals_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, double rate, bool infinite)
 {
 	struct queue_node *job = (struct queue_node *)malloc(sizeof(struct queue_node));
 	if (!job)
@@ -26,7 +26,7 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 	loss->index_user += 1;
 
 	time->last[3] = time->current;
-	events->tail_security_check_queue->id = loss->index_user;
+	// events->tail_security_check_queue->id = loss->index_user;
 
 	int idle_offset = -1;
 	for (int i = 0; i < NUMBER_OF_SECURITY_CHECK_SERVERS; i++)
@@ -38,29 +38,45 @@ void user_arrivals_security_check(struct event_list *events, struct time *time, 
 		}
 	}
 
-	if (idle_offset >= 0 && events->head_security_check_queue != NULL)
+	if (idle_offset == -1)
 	{
-
-		/*
-		Caso in cui la coda non è vuota e si è liberato un server, quindi
-		mandiamo il primo della coda in servizio e spostiamo il puntatore
-		della testa al prossimo nodo e liberiamo memoria.
-		*/
-
+		job = dequeue_node(&events->head_user_to_security_check);
+		enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
+		routing_ticket_gate(events, time, infinite);
+		// free(job);
+	}
+	else if (idle_offset >= 0)
+	{
 		state->server_count += 1;
 		state->server_occupation[idle_offset] = 1;
 		events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
-
-		processed_job_security_check[idle_offset] = events->head_security_check_queue->id;
-
-		dequeue_node_free_node(&events->head_security_check_queue);
-	}
-	else if (idle_offset == -1)
-	{
-		state->queue_count += 1;
+		processed_job_security_check[idle_offset] = events->head_user_to_security_check->id;
+		dequeue_node_free_node(&events->head_user_to_security_check);
 	}
 
-	state->population = state->queue_count + state->server_count;
+	// if (idle_offset >= 0 && events->head_security_check_queue != NULL)
+	// {
+
+	// 	/*
+	// 	Caso in cui la coda non è vuota e si è liberato un server, quindi
+	// 	mandiamo il primo della coda in servizio e spostiamo il puntatore
+	// 	della testa al prossimo nodo e liberiamo memoria.
+	// 	*/
+
+	// 	state->server_count += 1;
+	// 	state->server_occupation[idle_offset] = 1;
+	// 	events->completionTimes_security_check[idle_offset] = get_security_check_departure(time->current);
+
+	// 	processed_job_security_check[idle_offset] = events->head_security_check_queue->id;
+
+	// 	dequeue_node_free_node(&events->head_security_check_queue);
+	// }
+	// else if (idle_offset == -1)
+	// {
+	// 	state->queue_count += 1;
+	// }
+
+	state->population = state->server_count;
 }
 
 void user_departure_security_check(struct event_list *events, struct time *time, struct states *state, struct loss *loss, int server_offset, bool infinite)
@@ -77,32 +93,35 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		exit(-1);
 	}
 
-	if (state->queue_count > 0)
-	{
+	events->completionTimes_security_check[server_offset] = (double)INFINITY;
+	state->server_occupation[server_offset] = 0;
 
-		/*
-		Il job in servizio viene messo o in coda al prossimo centro oppure viene mandato
-		in ticket gate. Se c'è un job in coda, assegno questo job al servente che si è
-		appena liberato e libero memoria dalla coda dei job di security check.
-		*/
+	// if (state->queue_count > 0)
+	// {
 
-		processed_job_security_check[server_offset] = events->head_security_check_queue->id;
-		state->server_occupation[server_offset] = 1;
-		events->completionTimes_security_check[server_offset] = get_security_check_departure(time->current);
-		dequeue_node_free_node(&events->head_security_check_queue);
-		state->queue_count -= 1;
-		state->server_count += 1;
-	}
-	else
-	{
+	// 	/*
+	// 	Il job in servizio viene messo o in coda al prossimo centro oppure viene mandato
+	// 	in ticket gate. Se c'è un job in coda, assegno questo job al servente che si è
+	// 	appena liberato e libero memoria dalla coda dei job di security check.
+	// 	*/
 
-		/*
-		Il servente ha terminato la sua esecuzione e resettiamo il suo stato perché non
-		c'è più nessun altro job da processare.
-		*/
-		events->completionTimes_security_check[server_offset] = (double)INFINITY;
-		state->server_occupation[server_offset] = 0;
-	}
+	// 	processed_job_security_check[server_offset] = events->head_security_check_queue->id;
+	// 	state->server_occupation[server_offset] = 1;
+	// 	events->completionTimes_security_check[server_offset] = get_security_check_departure(time->current);
+	// 	dequeue_node_free_node(&events->head_security_check_queue);
+	// 	state->queue_count -= 1;
+	// 	state->server_count += 1;
+	// }
+	// else
+	// {
+
+	// 	/*
+	// 	Il servente ha terminato la sua esecuzione e resettiamo il suo stato perché non
+	// 	c'è più nessun altro job da processare.
+	// 	*/
+	// 	events->completionTimes_security_check[server_offset] = (double)INFINITY;
+	// 	state->server_occupation[server_offset] = 0;
+	// }
 
 	if (!(get_random(11) <= P_LEAVE_SECURITY_CONTROL))
 	{
@@ -113,5 +132,5 @@ void user_departure_security_check(struct event_list *events, struct time *time,
 		enqueue_node(&events->head_ticket_gate, &events->tail_ticket_gate, job);
 		routing_ticket_gate(events, time, infinite);
 	}
-	state->population = state->queue_count + state->server_count;
+	state->population = state->server_count;
 }

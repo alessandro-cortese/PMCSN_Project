@@ -317,9 +317,9 @@ void routing_security_check(struct event_list *events, struct time *time, double
     {
         // printf("Route to security check queue!\n");
         struct queue_node *job;
-        job = dequeue_node(&events->head_user_to_security_check);
-        enqueue_node(&events->head_security_check_queue, &events->tail_security_check_queue, job);
-        user_arrivals_security_check(events, time, &state[3], &loss[3], rate);
+        //job = dequeue_node(&events->head_user_to_security_check);
+        //enqueue_node(&events->head_security_check_queue, &events->tail_security_check_queue, job);
+        user_arrivals_security_check(events, time, &state[3], &loss[3], rate, infinite);
         if (infinite)
         {
             struct infinite_horizon_stats *inf_horizon_stats = get_infinite_horizon_address();
@@ -436,13 +436,13 @@ void consistency_check_population(struct event_list *events)
         printf("Errore di consistenza nei server di customer support, assegnati più di quelli disponibili!\n");
         exit(-1);
     }
-    if (state[3].queue_count != lenOfQueue(events->head_security_check_queue))
-    {
-        printf("queue count for security check is different!\n");
-        printf("len queue security check is %d\n", lenOfQueue(events->head_security_check_queue));
-        printf("state[3].queue_count = %d\n", state[3].queue_count);
-        exit(-1);
-    }
+    // if (state[3].queue_count != lenOfQueue(events->head_security_check_queue))
+    // {
+    //     printf("queue count for security check is different!\n");
+    //     printf("len queue security check is %d\n", lenOfQueue(events->head_security_check_queue));
+    //     printf("state[3].queue_count = %d\n", state[3].queue_count);
+    //     exit(-1);
+    // }
     if (state[3].server_count > NUMBER_OF_SECURITY_CHECK_SERVERS)
     {
         printf("Errore di consistenza nei server di security check, assegnati più di quelli disponibili!\n");

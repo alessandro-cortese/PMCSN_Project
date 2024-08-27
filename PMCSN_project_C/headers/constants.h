@@ -11,7 +11,7 @@
 // Number of batch
 #define K 64
 // Batch size
-#define B 512
+#define B 256
 
 #define SEED 123456789
 
