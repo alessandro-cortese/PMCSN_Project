@@ -6,7 +6,7 @@ struct states
     int population;
     int server_count;
     int queue_count;
-    int *server_occupation;
+    int server_occupation;
 };
 
 #endif
